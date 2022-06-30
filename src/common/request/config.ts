@@ -7,4 +7,4 @@ export const timeout = 14000
 /**
  * 接口基准头
  */
-export const BASE_URL = useSystemConfigStore().serverIp
+export const BASE_COMIC_URL = useSystemConfigStore().serverIp

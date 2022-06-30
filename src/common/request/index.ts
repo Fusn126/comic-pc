@@ -1,10 +1,10 @@
 import axios from 'axios'
-import { BASE_URL, timeout } from './config'
+import { BASE_COMIC_URL, timeout } from './config'
 import AxiosUtils from './axiosUtils.class'
 
 // 创建公共实例
 const instance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: BASE_COMIC_URL,
   timeout
 })
 new AxiosUtils(instance)
