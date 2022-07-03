@@ -1,9 +1,8 @@
 <template>
   <BotLoad class="play-history" :data="timelist" :perpage="3">
-    <h2>
+    <h2 v-if="timelist.length > 0">
       播放历史
       <el-popconfirm
-        v-if="timelist.length > 0"
         title="确定清空播放记录嘛？"
         confirm-button-text="确定"
         cancel-button-text="取消"
