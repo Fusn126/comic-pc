@@ -20,6 +20,10 @@ import {
   ref
 } from 'vue'
 import ElTeleport from '@/directs/elTeleport.direct'
+
+/**
+ * todo 初始化位置导致的左上角错误显示
+ */
 export default defineComponent({
   name: 'AttachedContainer',
   directives: {

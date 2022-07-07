@@ -1,5 +1,12 @@
 <template>
-  <div v-if="detail" class="comic-fav-card">
+  <AwDrag
+    v-if="detail"
+    class="comic-fav-card"
+    :draggable="true"
+    group-key="ComicFavCard"
+    :self-key="id"
+    @ex-change="posExchange"
+  >
     <div class="cover">
       <BaseImg :src="detail.comicCover" />
       <Icon name="play" @click="toComicMain(detail!.comicId)" />
@@ -21,12 +28,14 @@
         </template>
       </el-dropdown>
     </div>
-  </div>
+  </AwDrag>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
 import moment from 'moment'
+
+import { AwDrag, ExchangeParam } from '@/components/AwDrag/AwDrag'
 
 import { ComicFavItem } from '@/class/comicFav.class'
 import { toComicMain } from '@/hooks/router'
@@ -35,26 +44,40 @@ import { useComicUpdate } from '@/stores/comicUpdate.store'
 
 export default defineComponent({
   name: 'ComicFavCard',
+  components: {
+    AwDrag
+  },
   props: {
     detail: {
       type: Object as PropType<null | ComicFavItem>,
       default: null
+    },
+    id: {
+      type: [Number, String],
+      default: -1
     }
   },
   setup(props) {
     const favStore = useFavStore()
     const comicUpdate = useComicUpdate()
+
     const showDate = computed(() =>
       moment(props.detail?.favDate).format('YYYY-MM-DD')
     )
-    const deleteFav = () => favStore.comicFav(props.detail!)
     const comicUpdateInfo = computed(() => {
       const info = comicUpdate.getComicUpdateInfo(props.detail?.comicId || -1)
       return !info ? '' : `${info.updateTime}更新 - 已${info.status}`
     })
+
+    const deleteFav = () => favStore.comicFav(props.detail!)
+    const posExchange = ({ from, to }: ExchangeParam) => {
+      favStore.exChange(from, to)
+    }
+
     return {
       showDate,
       toComicMain,
+      posExchange,
       deleteFav,
       comicUpdateInfo
     }
@@ -94,6 +117,9 @@ export default defineComponent({
     &:hover {
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
+    &::before {
+      .mask;
+    }
   }
 
   .info {
@@ -101,6 +127,7 @@ export default defineComponent({
     width: 100%;
     box-sizing: border-box;
     transition: all 0.25s;
+    overflow: hidden;
     p {
       .p-truncate(1);
       margin-top: 8px;

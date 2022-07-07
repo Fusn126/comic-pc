@@ -3,6 +3,7 @@
     <ListVueTransition v-if="favs.length > 0" class="comic-favlist__content">
       <ComicFavCard
         v-for="comic in favs"
+        :id="comic.comicId"
         :key="comic.comicId"
         :detail="comic"
       />
