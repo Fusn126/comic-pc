@@ -31,3 +31,15 @@ export function throttle(callback: DefaultFn, delay = 300) {
     }, delay)
   }
 }
+
+/**
+ * 数组位置交换
+ * @param arr
+ * @param aIndex
+ * @param bIndex
+ */
+export function swap<T>(arr: T[], aIndex: number, bIndex: number) {
+  const [a, b] = [arr[aIndex], arr[bIndex]]
+  arr.splice(aIndex, 1, b)
+  arr.splice(bIndex, 1, a)
+}

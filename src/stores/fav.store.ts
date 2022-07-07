@@ -18,6 +18,19 @@ export const useFavStore = defineStore('favStore', {
     },
     saveComicFav() {
       getComicFavInstance().saveStore()
+    },
+    exChange(aId: ComicId, bId: ComicId) {
+      let aIndex = 0,
+        bIndex = 0
+      this.comicFavs.forEach((item, index) => {
+        if (aId === item.comicId) {
+          aIndex = index
+        }
+        if (bId === item.comicId) {
+          bIndex = index
+        }
+      })
+      getComicFavInstance().exChange(aIndex, bIndex)
     }
   }
 })

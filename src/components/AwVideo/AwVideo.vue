@@ -2,7 +2,10 @@
   <div
     ref="selfEl"
     class="aw-video"
-    :class="{ 'web-fullscreen': player.webFullScreen }"
+    :class="{
+      'web-fullscreen': player.webFullScreen,
+      'pointer-hide': !controlBar.visible
+    }"
     :style="{ opacity: src ? 1 : 0 }"
     @mousemove="controlBarVisibleHandler"
     @touchmove="controlBarVisibleHandler"
@@ -637,6 +640,10 @@ export default defineComponent({
     width: 100%;
     height: 100vh;
     z-index: 9999;
+  }
+
+  &.pointer-hide {
+    cursor: none;
   }
 
   ::v-deep(.video-render) {

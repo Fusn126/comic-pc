@@ -1,3 +1,4 @@
+import { swap } from '@/utils/adLoadsh'
 import { jsonParse } from 'adicw-utils'
 import { ref } from 'vue'
 
@@ -65,6 +66,10 @@ class ComicFav {
     if (data instanceof Array) {
       this.fav_.value = data
     }
+  }
+
+  public exChange(aIndex: number, bIndex: number) {
+    swap(this.fav_.value, aIndex, bIndex)
   }
 }
 
