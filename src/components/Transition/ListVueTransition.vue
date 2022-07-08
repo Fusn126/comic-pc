@@ -32,13 +32,15 @@ export default defineComponent({
 .list-complete {
   &-enter-from,
   &-leave-to {
-    opacity: 0;
+    opacity: 0 !important;
     transform: translateY(30px);
   }
+
   &-leave-active {
     position: absolute !important;
     // opacity: 0;
   }
+
   &-move {
     transition: all 0.25s;
   }

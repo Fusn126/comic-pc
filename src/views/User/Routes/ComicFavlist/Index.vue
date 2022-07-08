@@ -60,7 +60,7 @@ export default defineComponent({
   overflow-y: auto;
 
   &__content {
-    flex: 1;
+    width: 100%;
     display: grid;
     grid-template-columns: repeat(var(--favcomic-col-count), 1fr);
     gap: 30px;

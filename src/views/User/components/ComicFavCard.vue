@@ -88,6 +88,7 @@ export default defineComponent({
 .comic-fav-card {
   position: relative;
   width: 100%;
+  height: max-content;
   user-select: none;
   transform: perspective(800px);
   transform-style: preserve-3d;

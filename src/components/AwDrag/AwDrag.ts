@@ -6,6 +6,7 @@ import {
   DefineComponent,
   defineComponent,
   h,
+  onMounted,
   reactive,
   ref,
   Teleport
@@ -54,9 +55,9 @@ export const AwDrag = defineComponent({
   },
   setup(props, ctx) {
     const selfEl = ref<HTMLElement>()
-    const fakeImg = new Image()
-    fakeImg.src =
-      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' %3E%3Cpath /%3E%3C/svg%3E"
+    // const fakeImg = new Image()
+    // fakeImg.src =
+    //   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' %3E%3Cpath /%3E%3C/svg%3E"
 
     const state = reactive({
       draging: false,
@@ -85,10 +86,13 @@ export const AwDrag = defineComponent({
         })()
       }
     })
+    const innerOrgRectStyle = computed<CSSProperties>(() => ({
+      width: `${selfElRect.width}px`,
+      height: `${selfElRect.height}px`
+    }))
     const innerOrgStyle = computed<CSSProperties>(() => {
       return {
-        width: `${selfElRect.width}px`,
-        height: `${selfElRect.height}px`,
+        ...innerOrgRectStyle.value,
         transform: `translate(${move.x - move.offsetX}px,${
           move.y - move.offsetY
         }px)`
@@ -104,9 +108,10 @@ export const AwDrag = defineComponent({
     const ondragstart = (e: DragEvent) => {
       move.offsetX = e.offsetX
       move.offsetY = e.offsetY
+      ondrag(e)
       state.draging = true
 
-      e.dataTransfer?.setDragImage(fakeImg, 0, 0) // 设置拖动时为透明
+      // e.dataTransfer?.setDragImage(fakeImg, 0, 0) // 设置拖动时为透明
 
       e.dataTransfer?.setData(
         'aw-drag',
@@ -116,8 +121,10 @@ export const AwDrag = defineComponent({
         } as DargTransferData)
       )
     }
-    // 此事件默认有节流，略卡
+    // drag事件有毫秒级的节流，故建议在dragstart中在执行一次
     const ondrag = (e: DragEvent) => {
+      // console.log(e.clientX, e.offsetX, e.pageX)
+      // todo firefox兼容问题，其无pageX
       move.x = e.pageX
       move.y = e.pageY
     }
@@ -149,13 +156,18 @@ export const AwDrag = defineComponent({
       state.dragEntering = false
     }
     const ondragenter = (e: DragEvent) => {
-      console.log('eneter')
       state.isSameDrag = !!selfEl.value?.contains(e.target as HTMLElement)
     }
+    const styleInit = () => {
+      move.x = selfElRect.x
+      move.y = selfElRect.y
+    }
+    onMounted(() => {
+      styleInit()
+    })
 
-    return () => {
-      const slot = ctx.slots.default!
-      return h(
+    return () =>
+      h(
         'div',
         {
           ref: selfEl,
@@ -184,21 +196,25 @@ export const AwDrag = defineComponent({
                   {
                     ...ctx.attrs,
                     style: {
-                      ...innerOrgStyle.value,
                       position: 'fixed',
                       zIndex: 3333,
                       top: 0,
                       left: 0,
-                      pointerEvents: 'none'
+                      pointerEvents: 'none',
+                      transition: 'opacity 0.25s',
+                      opacity: 0.6,
+                      ...innerOrgStyle.value
                     }
                   },
-                  slot()
+                  ctx.slots.default!()
                 )
-              : slot()
+              : ctx.slots.default!()
           ),
-          state.draging && slot()
+          state.draging &&
+            h('div', {
+              style: innerOrgRectStyle.value
+            })
         ]
       )
-    }
   }
 }) as DefineComponent<AwDragProps>
