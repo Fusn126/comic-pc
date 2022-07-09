@@ -5,6 +5,7 @@ const REQUEST_BASEURL_STORE_KEY = 'REQUEST_BASEURL_STORE'
 const STATIC_RESOURCES_STORE_KEY = 'STATIC_RESOURCES_STORE'
 
 interface StaticResource {
+  /** 核心播放器进度条的当前图标地址 */
   videoProgressCurIcon: string
 }
 
@@ -29,6 +30,10 @@ export const useSystemConfigStore = defineStore('SystemConfig', {
     } as StaticResource
   }),
   actions: {
+    init() {
+      this.getServerIp()
+      this.getStaticResource()
+    },
     saveServerIp(url: string) {
       this.serverIp = url
       localStorage.setItem(REQUEST_BASEURL_STORE_KEY, url)

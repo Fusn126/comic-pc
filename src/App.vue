@@ -51,7 +51,7 @@ export default defineComponent({
   },
   setup() {
     const systemConfigStore = useSystemConfigStore()
-    systemConfigStore.getServerIp()
+    systemConfigStore.init()
     return {
       WEB_NAME,
       ...asideModule(),

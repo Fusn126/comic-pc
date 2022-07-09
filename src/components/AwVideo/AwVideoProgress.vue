@@ -16,8 +16,8 @@
       </div>
     </div>
     <div class="aw-video__progress-indicator" :style="tooltipStyle">
-      <Icon name="icon_love_hover" />
-      <Icon name="icon_love_hover" />
+      <Icon name="play" />
+      <Icon name="play" />
     </div>
     <AwSlider
       v-model="sliderVal"
@@ -232,14 +232,15 @@ export default defineComponent({
     i {
       position: absolute;
       font-size: @width;
-      color: crimson;
+      color: #fff;
       opacity: 0.9;
       &:first-child {
         top: @offset;
+        transform: scale(0.77) rotate(90deg);
       }
       &:last-child {
         bottom: @offset;
-        transform: rotate(180deg);
+        transform: scale(0.77) rotate(-90deg);
       }
     }
   }

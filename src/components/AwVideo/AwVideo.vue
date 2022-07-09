@@ -23,6 +23,7 @@
     >
       <AwVideoProgress
         ref="awVideoProgressComp"
+        :btn-icon="btnIcon"
         :preview-img="player.preview"
         :duration="player.duration"
         :current-time="player.currentTime"
@@ -365,6 +366,10 @@ export default defineComponent({
     requesting: {
       type: Boolean,
       default: false
+    },
+    btnIcon: {
+      type: String,
+      default: ''
     }
   },
   emits: ['changeQuality', 'ended', 'error', 'next'],

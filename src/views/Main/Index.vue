@@ -12,6 +12,7 @@
           :src="anthology.current"
           :init-current-time="initPlayerCurrentTime"
           :requesting="isPending"
+          :btn-icon="systemConfigStore.staticResource.videoProgressCurIcon"
           @next="nextAnthology"
           @ended="nextAnthology"
           @error="onVideoError"
@@ -74,6 +75,7 @@ import * as Api from '@apis/index'
 import * as Type from './types/index.type'
 import { GetComicMainReturn } from '@apis/index'
 import { usePlayCache } from '@/hooks/user'
+import { useSystemConfigStore } from '@/stores/systemConfig.store'
 
 /**
  * 动漫信息模块
@@ -157,6 +159,7 @@ export default defineComponent({
     const awVideoComp = ref<InstanceType<typeof AwVideo>>()
     const route = useRoute()
     const { playProgressCache, playHistoryCache } = usePlayCache()
+    const systemConfigStore = useSystemConfigStore()
 
     const routeParam = computed(() => ({
       episode: Number(route.query.episode) || -1,
@@ -373,7 +376,8 @@ export default defineComponent({
       initPlayerCurrentTime,
       changeAnthology,
       onVideoError,
-      nextAnthology
+      nextAnthology,
+      systemConfigStore
     }
   }
 })

@@ -14,10 +14,14 @@
     </div>
     <div class="setting-box setting-config">
       <div class="setting-box__title">参数配置</div>
-      <el-form ref="configFormComp" :model="config" :rules="configRules">
+      <el-form
+        ref="paramFormComp"
+        :model="configVal"
+        :rules="paramConfig.formRules"
+      >
         <el-form-item label="服务器地址" prop="serverIp">
           <el-input
-            v-model="config.serverIp"
+            v-model="configVal.serverIp"
             :style="hideStyle"
             placeholder="如：http://192.169.1.19:8002/"
           />
@@ -25,24 +29,28 @@
       </el-form>
 
       <div class="setting-box__control">
-        <el-button type="primary" round @click="saveServerIpConfig"
+        <el-button type="primary" round @click="paramConfig.save"
           >保存</el-button
         >
       </div>
     </div>
     <div class="setting-box setting-config">
       <div class="setting-box__title">资源配置</div>
-      <el-form ref="configFormComp" :model="config" :rules="configRules">
-        <el-form-item label="播放器实时进度小图标" prop="serverIp">
+      <el-form
+        ref="staticResourceFormComp"
+        :model="configVal.staticResource"
+        :rules="staticResourceConfig.formRules"
+      >
+        <el-form-item label="播放器实时进度小图标" prop="videoProgressCurIcon">
           <el-input
-            v-model="config.staticResource.videoProgressCurIcon"
+            v-model="configVal.staticResource.videoProgressCurIcon"
             placeholder="如：https://api.adicw.cn/uploads/UserAvatar/default.jpg"
           />
         </el-form-item>
       </el-form>
 
       <div class="setting-box__control">
-        <el-button type="primary" round @click="aveStaticResourceConfig"
+        <el-button type="primary" round @click="staticResourceConfig.save"
           >保存</el-button
         >
       </div>
@@ -62,6 +70,12 @@ import { ElForm, ElNotification } from 'element-plus'
 import { useSystemConfigStore } from '@/stores/systemConfig.store'
 import { FormRulesMap } from 'element-plus/lib/components/form/src/form.type'
 import { useIsDev } from '@/hooks/utils'
+import { REGEX_IMG } from '@/utils/regex'
+
+interface ConfigForm {
+  formRules: FormRulesMap
+  save: () => void
+}
 
 function themeColorModule() {
   const themeColorEditorComp = ref<InstanceType<typeof ThemeColorEditor>>()
@@ -94,61 +108,82 @@ function themeColorModule() {
 }
 
 function configModule() {
-  const configFormComp = ref<InstanceType<typeof ElForm>>()
-  const systemConfigStore = useSystemConfigStore()
+  const paramFormComp = ref<InstanceType<typeof ElForm>>()
+  const staticResourceFormComp = ref<InstanceType<typeof ElForm>>()
 
-  const config = reactive({
+  const systemConfigStore = useSystemConfigStore()
+  const configVal = reactive({
     serverIp: systemConfigStore.serverIp,
     staticResource: systemConfigStore.staticResource
   })
-  const configRules: FormRulesMap = reactive({
-    serverIp: [
-      {
-        trigger: 'blur',
-        validator(rule, value, callback) {
-          if (value) {
-            callback()
-          } else {
-            callback(new Error('请检查地址格式'))
+  /** 参数配置 */
+  const paramConfig: ConfigForm = {
+    formRules: {
+      serverIp: [
+        {
+          trigger: 'blur',
+          validator(rule, value, callback) {
+            if (value) {
+              callback()
+            } else {
+              callback(new Error('请检查地址格式'))
+            }
           }
         }
+      ]
+    },
+    async save() {
+      try {
+        await paramFormComp.value!.validate()
+        systemConfigStore.saveServerIp(configVal.serverIp)
+        // ElNotification({
+        //   title: '参数配置',
+        //   message: '参数保存成功',
+        //   type: 'success'
+        // })
+        location.reload()
+      } catch (e) {
+        // console.log(e)
       }
-    ]
-  })
-  const saveServerIpConfig = async () => {
-    try {
-      await configFormComp.value!.validate()
-      systemConfigStore.saveServerIp(config.serverIp)
-      // ElNotification({
-      //   title: '参数配置',
-      //   message: '参数保存成功',
-      //   type: 'success'
-      // })
-      location.reload()
-    } catch (e) {
-      // console.log(e)
     }
   }
-  const aveStaticResourceConfig = async () => {
-    try {
-      await configFormComp.value!.validate()
-      systemConfigStore.saveServerIp(config.serverIp)
-      // ElNotification({
-      //   title: '参数配置',
-      //   message: '参数保存成功',
-      //   type: 'success'
-      // })
-      location.reload()
-    } catch (e) {
-      // console.log(e)
+  /** 资源配置 */
+  const staticResourceConfig: ConfigForm = {
+    formRules: {
+      videoProgressCurIcon: [
+        {
+          trigger: 'blur',
+          validator(rule, value, callback) {
+            if (REGEX_IMG.test(value) || value === '') {
+              callback()
+            } else {
+              callback(new Error('请检查地址格式'))
+            }
+          }
+        }
+      ]
+    },
+    async save() {
+      try {
+        await staticResourceFormComp.value!.validate()
+        systemConfigStore.saveStaticResource(configVal.staticResource)
+        ElNotification({
+          title: '资源配置',
+          message: '保存成功',
+          type: 'success'
+        })
+      } catch (e) {
+        // console.log(e)
+      }
     }
   }
+
   return {
-    config,
-    configRules,
-    saveServerIpConfig,
-    configFormComp,
-    aveStaticResourceConfig
+    paramFormComp,
+    staticResourceFormComp,
+    configVal,
+    staticResourceConfig,
+    paramConfig
   }
 }
 
@@ -162,7 +197,7 @@ export default defineComponent({
     const hideStyle = computed(
       () =>
         ({
-          opacity: isDev ? 0 : 1
+          // opacity: isDev ? 0 : 1
         } as CSSProperties)
     )
     return {
@@ -179,6 +214,7 @@ export default defineComponent({
   width: 100%;
   height: 100%;
   overflow: hidden;
+
   .setting-box {
     width: 100%;
     background: var(--box-bg-color);
@@ -187,15 +223,18 @@ export default defineComponent({
     border-top-left-radius: 24px;
     border-bottom-left-radius: 24px;
     margin-bottom: 30px;
+
     &__title {
       font-weight: 600;
       font-size: 20px;
       padding-bottom: 20px;
     }
+
     &__control {
       margin-top: 20px;
     }
   }
+
   // .setting-themecolor {
   // height: 400px;
   // }

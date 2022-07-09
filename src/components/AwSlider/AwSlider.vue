@@ -56,6 +56,9 @@ export default defineComponent({
       type: Array as PropType<[number, number][]>,
       default: () => []
     },
+    /**
+     * 当前进度图标地址
+     */
     btnIcon: {
       type: String,
       default: ''
