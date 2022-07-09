@@ -1,4 +1,5 @@
 <template>
+  <!-- :style="{ opacity: src ? 1 : 0 }" -->
   <div
     ref="selfEl"
     class="aw-video"
@@ -6,7 +7,6 @@
       'web-fullscreen': player.webFullScreen,
       'pointer-hide': !controlBar.visible
     }"
-    :style="{ opacity: src ? 1 : 0 }"
     @mousemove="controlBarVisibleHandler"
     @touchmove="controlBarVisibleHandler"
   >
@@ -14,11 +14,12 @@
       :status="player.status"
       :src="src"
       :play-handler="playHandler"
+      :waiting="requesting"
       @notify="notify"
     />
     <div
       :class="{ show: src && player.status !== -1 && controlBar.visible }"
-      class="aw-video__control"
+      class="aw-video__control show"
     >
       <AwVideoProgress
         ref="awVideoProgressComp"
@@ -28,7 +29,7 @@
         :buffered-list="player.bufferedList"
         @timePreview="computedPreview"
         @change="onProgressChange"
-        @progressing="controlBar.isProgressing = true"
+        @progressing="progress.isProgressing = true"
       />
       <Icon
         class="control-icon control-icon__play"
@@ -43,9 +44,26 @@
         />
       </el-tooltip>
       <div class="control-time">
-        {{ sToMs(player.currentTime) }}
-        <span>/</span>
-        {{ sToMs(player.duration) }}
+        <div
+          v-show="!progress.inputing"
+          class="control-time__show"
+          @click="startProgressInput"
+        >
+          {{ sToMs(player.currentTime) }}
+          <span>/</span>
+          {{ sToMs(player.duration) }}
+        </div>
+        <div
+          v-show="progress.inputing"
+          v-click-outside="() => (progress.inputing = false)"
+          class="control-time__input"
+        >
+          <input
+            v-model="progress.inputVal"
+            type="text"
+            @keyup.enter="endProgressInput"
+          />
+        </div>
       </div>
       <!-- <div
         v-if="quality.length > 0"
@@ -172,7 +190,8 @@ import {
   fullscreen,
   pictureInPicture,
   checkFullscreen,
-  sToMs
+  sToMs,
+  timeToS
 } from 'adicw-utils'
 
 import AwVideoProgress from './AwVideoProgress.vue'
@@ -184,11 +203,13 @@ import { debounce, throttle } from '@/utils/adLoadsh'
 import { useEventListener } from '@/utils/vant/useEventListener'
 import { getVideoScreenshot } from '@/utils/media'
 import * as Type from './type'
+import ClickOutside from '@/directs/clickOutside.direct'
 
 export * from './type'
 
 // type Props = ExtractPropTypes<typeof props>
 type VideoInstance = InstanceType<typeof VideoRender>
+type AwVideoProgressComp = InstanceType<typeof AwVideoProgress>
 
 /** 播放倍数模块 */
 function playbackRateModule(videoInstance: Ref<VideoInstance | undefined>) {
@@ -232,6 +253,64 @@ function playbackRateModule(videoInstance: Ref<VideoInstance | undefined>) {
     playbackRate
   }
 }
+/** 播放进度模块 */
+function progressModule(
+  videoInstance: Ref<VideoInstance | undefined>,
+  player: Type.Player
+) {
+  const progress = shallowReactive({
+    isProgressing: false,
+    inputing: false,
+    inputVal: ''
+  })
+
+  /**
+   * 进度修改
+   * @param val ms
+   */
+  const changeProgress = (val: number) => {
+    videoInstance.value?.setCurrentTime(val)
+  }
+  /**
+   * 进度切换
+   * @param val 0-100
+   */
+  const onProgressChange = (val: number) => {
+    const realTime = player.duration * (+val / 100)
+    changeProgress(realTime)
+    progress.isProgressing = false
+  }
+  /**
+   * 进度快速切换
+   * @param limit s
+   */
+  const fastProgressChange = (limit: number) => {
+    const num = player.currentTime + limit
+    if (num < 0 || num > player.duration) return
+    changeProgress(num)
+  }
+  const startProgressInput = () => {
+    progress.inputing = true
+    progress.inputVal = sToMs(player.currentTime)
+  }
+  const endProgressInput = () => {
+    if (progress.inputVal.includes(':')) {
+      changeProgress(timeToS(progress.inputVal))
+    } else if (!isNaN(+progress.inputVal)) {
+      changeProgress(+progress.inputVal)
+    }
+    progress.inputing = false
+  }
+
+  return {
+    progress,
+    startProgressInput,
+    changeProgress,
+    onProgressChange,
+    fastProgressChange,
+    endProgressInput
+  }
+}
 
 export default defineComponent({
   name: 'AwVideo',
@@ -240,6 +319,9 @@ export default defineComponent({
     AwVideoMsg,
     AwVideoMask,
     VideoRender
+  },
+  directives: {
+    ClickOutside
   },
   props: {
     /** 视频源地址 */
@@ -276,12 +358,19 @@ export default defineComponent({
     initCurrentTime: {
       type: Number,
       default: 0
+    },
+    /**
+     * 是否处于资源获取中，用于确定请求是否完成
+     */
+    requesting: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['changeQuality', 'ended', 'error', 'next'],
   setup(props, ctx) {
     const awVideoMsgComp = ref<InstanceType<typeof AwVideoMsg>>()
-    const awVideoProgressComp = ref<InstanceType<typeof AwVideoProgress>>()
+    const awVideoProgressComp = ref<AwVideoProgressComp>()
     const videoInstance = ref<VideoInstance>()
     const selfEl = ref<HTMLElement>()
 
@@ -308,10 +397,15 @@ export default defineComponent({
       /** 是否显示 */
       visible: false,
       /**  */
-      timer: null as null | NodeJS.Timeout,
-      /** 是否在进度拖拽中 */
-      isProgressing: false
+      timer: null as null | NodeJS.Timeout
     })
+    const {
+      changeProgress,
+      onProgressChange,
+      fastProgressChange,
+      progress,
+      ...progressModuleArgs
+    } = progressModule(videoInstance, player)
     // const qualityModule =
     //   /** 画质切换模块 */
     //   (() => {
@@ -345,37 +439,13 @@ export default defineComponent({
     //   })()
 
     /**
-     * 进度修改
-     * @param val ms
-     */
-    const changeProgress = (val: number) => {
-      videoInstance.value?.setCurrentTime(val)
-    }
-    /**
      * 计算进度预览图
      * @param val ms
      */
     const computedPreview = debounce(async (val: number) => {
       player.preview = await getVideoScreenshot(props.src, val)
     }, 100)
-    /**
-     * 进度切换
-     * @param val 0-100
-     */
-    const onProgressChange = (val: number) => {
-      const realTime = player.duration * (+val / 100)
-      changeProgress(realTime)
-      controlBar.isProgressing = false
-    }
-    /**
-     * 进度快速切换
-     * @param limit s
-     */
-    const fastProgressChange = (limit: number) => {
-      const num = player.currentTime + limit
-      if (num < 0 || num > player.duration) return
-      changeProgress(num)
-    }
+
     const play = () => {
       player.status = Type.PlayerStatus.Playing
       videoInstance.value?.play()
@@ -495,7 +565,7 @@ export default defineComponent({
       },
       /** 进度 监听 */
       timeupdate(e: Event) {
-        if (controlBar.isProgressing) return
+        if (progress.isProgressing) return
         const video = e.target as HTMLVideoElement
 
         player.currentTime = video.currentTime
@@ -555,6 +625,7 @@ export default defineComponent({
         player.pip = false
       })
       useEventListener('keydown', (e) => {
+        if (progress.inputing) return
         const evt = e as KeyboardEvent
         e.preventDefault()
         switch (evt.key) {
@@ -600,6 +671,7 @@ export default defineComponent({
       awVideoMsgComp,
       player,
       controlBar,
+      progress,
       hideControlBar,
       playHandler,
       sToMs,
@@ -614,6 +686,7 @@ export default defineComponent({
       onProgressChange,
       fastProgressChange,
       controlBarVisibleHandler,
+      ...progressModuleArgs,
       ...playbackRateModule(videoInstance)
       // ...qualityModule
     }
@@ -621,244 +694,5 @@ export default defineComponent({
 })
 </script>
 <style lang="less" scoped>
-.aw-video {
-  @controlHeight: 38px;
-  --control-height: @controlHeight;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  color: var(--font-unactive-color);
-  background: #000;
-  overflow: hidden;
-  transition: all 0.25s;
-
-  &.web-fullscreen {
-    position: fixed;
-    left: 0;
-    top: 0;
-    aspect-ratio: unset;
-    width: 100%;
-    height: 100vh;
-    z-index: 9999;
-  }
-
-  &.pointer-hide {
-    cursor: none;
-  }
-
-  ::v-deep(.video-render) {
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 1;
-  }
-
-  &__control {
-    @padding: 16px;
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    margin: 0 @padding;
-    padding-top: 6px;
-    margin-bottom: 12px;
-    width: calc(100% - @padding*2);
-    display: flex;
-    align-items: center;
-    color: #fff;
-    background: rgba(43, 51, 63, 0.7);
-    height: @controlHeight;
-    user-select: none;
-    transition: all 0.25s;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-    transform: translateY(150%);
-    z-index: 4;
-
-    &.show {
-      transform: translateY(0%);
-    }
-
-    i {
-      cursor: pointer;
-    }
-
-    .control {
-      &-icon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: @controlHeight;
-        height: 100%;
-        font-size: 18px;
-
-        &.active-style {
-          &:active {
-            opacity: 0.7;
-          }
-        }
-
-        &.scale {
-          &:hover {
-            animation: icon-hover 0.8s forwards;
-          }
-
-          @keyframes icon-hover {
-            0% {
-              transform: scale(1);
-            }
-
-            20% {
-              transform: scale(1.1);
-            }
-
-            40% {
-              transform: scale(0.9);
-            }
-
-            60% {
-              transform: scale(1.1);
-            }
-
-            80% {
-              transform: scale(0.8);
-            }
-
-            100% {
-              transform: scale(1);
-            }
-          }
-        }
-
-        &__play {
-          font-size: 24px;
-
-          &.icon-pause {
-            font-size: 16px;
-          }
-        }
-
-        &__next {
-          font-size: 14px;
-        }
-      }
-
-      &-time {
-        display: flex;
-        align-items: center;
-        height: 100%;
-        margin: 0 20px;
-        font-size: 14px;
-        line-height: 14px;
-
-        span {
-          margin: 0 6px;
-        }
-      }
-
-      &-select {
-        position: relative;
-        margin-left: auto;
-        margin-right: 8px;
-        text-align: center;
-
-        &.quality {
-          width: 100px;
-        }
-
-        &.playback-rate {
-          width: 60px;
-
-          ul {
-            overflow: hidden;
-          }
-        }
-
-        span {
-          display: inline-block;
-          cursor: pointer;
-          font-size: 15px;
-          line-height: 8px;
-          width: 100%;
-          height: 15px;
-          font-weight: 500;
-        }
-
-        ul {
-          position: absolute;
-          bottom: @controlHeight;
-          left: 0;
-          right: 0;
-          margin: 0 auto;
-          width: 100%;
-          padding: 6px 0;
-          font-size: 14px;
-          color: var(--font-unactive-color);
-          background: var(--bg-color);
-          border-radius: 14px;
-          transition: all 0.25s;
-
-          li {
-            cursor: pointer;
-            padding: 6px 0;
-            transition: all 0.25s;
-
-            &.active {
-              color: var(--font-color);
-              background: none !important;
-            }
-
-            &:hover {
-              background: var(--primary-color);
-            }
-          }
-        }
-      }
-
-      &-volume {
-        &:hover {
-          .control-volume__inner {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        &__inner {
-          position: absolute;
-          bottom: calc(@controlHeight);
-          padding: 18px 4px;
-          background: var(--aside-bg-color);
-          border-radius: 24px;
-          transition: all 0.25s;
-          opacity: 0;
-          transform: translateY(160%);
-          box-shadow: 0 0 12px rgba(0 0 0 / 0.1);
-
-          ::v-deep(.el-slider) {
-            .el-slider__bar {
-              background: var(--font-color);
-            }
-
-            .el-slider__runway {
-              width: 2px;
-              background: var(--font-unactive-color);
-            }
-
-            .el-slider__bar {
-              width: 2px;
-            }
-
-            .el-slider__button-wrapper {
-              left: calc(var(--el-slider-button-wrapper-offset) - 2px);
-            }
-
-            .el-slider__button {
-              border-color: var(--font-color);
-              transform: scale(0.7);
-            }
-          }
-        }
-      }
-    }
-  }
-}
+@import './styles/aw-video';
 </style>

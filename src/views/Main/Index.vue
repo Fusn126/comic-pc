@@ -11,6 +11,7 @@
           :key="id"
           :src="anthology.current"
           :init-current-time="initPlayerCurrentTime"
+          :requesting="isPending"
           @next="nextAnthology"
           @ended="nextAnthology"
           @error="onVideoError"

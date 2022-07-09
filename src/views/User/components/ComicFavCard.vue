@@ -114,6 +114,7 @@ export default defineComponent({
       color: rgba(255, 255, 255, 0.925);
       opacity: 0.3;
       transition: all 0.25s;
+      z-index: 5;
     }
     &:hover {
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);

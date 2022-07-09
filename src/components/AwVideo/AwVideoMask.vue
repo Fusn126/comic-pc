@@ -10,7 +10,7 @@
     enter-active-class="animate__fadeIn"
     leave-active-class="animate__fadeOut"
   >
-    <div v-show="loading.visible" class="aw-video__loading">
+    <div v-show="loading.visible || waiting" class="aw-video__loading">
       <LoadingBlockRun />
     </div>
   </transition>
@@ -18,7 +18,7 @@
     <img src="~static/img/video-bad.png" />
     <span>加载失败了，好耶！</span>
   </div>
-  <div v-if="!src" class="aw-video__bad">
+  <div v-if="!src && !waiting" class="aw-video__bad">
     <img src="~static/img/video-empty.png" />
     <span>暂无播放内容~</span>
   </div>
@@ -34,12 +34,14 @@ const props = withDefaults(
   defineProps<{
     status: Type.Player['status']
     src: string
+    waiting: boolean
     playHandler: (e: Event) => void
   }>(),
   {
     status: Type.PlayerStatus.None,
     src: '',
-    playHandler: () => false
+    playHandler: () => false,
+    waiting: false
   }
 )
 
