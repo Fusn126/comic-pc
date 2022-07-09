@@ -14,12 +14,11 @@ export function getServerIp() {
 }
 
 export function getStaticResource() {
-  return jsonParse<StaticResource>(
-    localStorage.getItem(STATIC_RESOURCES_STORE_KEY),
-    {
-      videoProgressCurIcon: ''
-    }
-  )
+  const data = localStorage.getItem(STATIC_RESOURCES_STORE_KEY)
+  const origin = {
+    videoProgressCurIcon: ''
+  }
+  return jsonParse<StaticResource>(data, origin) || origin
 }
 
 export const useSystemConfigStore = defineStore('SystemConfig', {
