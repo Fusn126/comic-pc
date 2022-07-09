@@ -25,7 +25,26 @@
       </el-form>
 
       <div class="setting-box__control">
-        <el-button type="primary" round @click="saveConfig">保存</el-button>
+        <el-button type="primary" round @click="saveServerIpConfig"
+          >保存</el-button
+        >
+      </div>
+    </div>
+    <div class="setting-box setting-config">
+      <div class="setting-box__title">资源配置</div>
+      <el-form ref="configFormComp" :model="config" :rules="configRules">
+        <el-form-item label="播放器实时进度小图标" prop="serverIp">
+          <el-input
+            v-model="config.staticResource.videoProgressCurIcon"
+            placeholder="如：https://api.adicw.cn/uploads/UserAvatar/default.jpg"
+          />
+        </el-form-item>
+      </el-form>
+
+      <div class="setting-box__control">
+        <el-button type="primary" round @click="aveStaticResourceConfig"
+          >保存</el-button
+        >
       </div>
     </div>
   </div>
@@ -79,7 +98,8 @@ function configModule() {
   const systemConfigStore = useSystemConfigStore()
 
   const config = reactive({
-    serverIp: systemConfigStore.serverIp
+    serverIp: systemConfigStore.serverIp,
+    staticResource: systemConfigStore.staticResource
   })
   const configRules: FormRulesMap = reactive({
     serverIp: [
@@ -95,7 +115,21 @@ function configModule() {
       }
     ]
   })
-  const saveConfig = async () => {
+  const saveServerIpConfig = async () => {
+    try {
+      await configFormComp.value!.validate()
+      systemConfigStore.saveServerIp(config.serverIp)
+      // ElNotification({
+      //   title: '参数配置',
+      //   message: '参数保存成功',
+      //   type: 'success'
+      // })
+      location.reload()
+    } catch (e) {
+      // console.log(e)
+    }
+  }
+  const aveStaticResourceConfig = async () => {
     try {
       await configFormComp.value!.validate()
       systemConfigStore.saveServerIp(config.serverIp)
@@ -112,8 +146,9 @@ function configModule() {
   return {
     config,
     configRules,
-    saveConfig,
-    configFormComp
+    saveServerIpConfig,
+    configFormComp,
+    aveStaticResourceConfig
   }
 }
 

@@ -10,12 +10,18 @@
           :style="item"
         ></div>
       </div>
-      <div
-        class="aw-slider__btn"
-        :class="{ active: isDraging }"
-        :style="btnStyle"
-        @mousedown="dragStart"
-      ></div>
+      <div class="aw-slider__btn" :style="btnStyle" @mousedown="dragStart">
+        <div class="aw-slider__btn-inner">
+          <div
+            v-if="!btnIcon"
+            class="default block"
+            :class="{ active: isDraging }"
+          ></div>
+          <div v-else class="default icon" :class="{ active: isDraging }">
+            <img :src="btnIcon" alt="" />
+          </div>
+        </div>
+      </div>
       <slot name="runway" />
     </div>
   </div>
@@ -49,6 +55,10 @@ export default defineComponent({
     parts: {
       type: Array as PropType<[number, number][]>,
       default: () => []
+    },
+    btnIcon: {
+      type: String,
+      default: ''
     }
   },
   emits: {
@@ -77,11 +87,11 @@ export default defineComponent({
         } as CSSProperties)
     )
     const btnStyle = computed(() => {
-      const offsetY = 4
+      // const offsetY = 4
       const offsetX = 10
       return {
-        height: `${props.height + offsetY * 2}px`,
-        top: `-${offsetY}px`,
+        // height: `${props.height + offsetY * 2}px`,
+        // top: `-${offsetY}px`,
         transform: `translateX(${
           selfSize.width * (props.modelValue / 100) - offsetX
         }px)`
@@ -188,27 +198,54 @@ export default defineComponent({
   &__btn {
     position: absolute;
     top: 0;
+    bottom: 0;
+    margin: auto 0;
     left: 0;
     z-index: 2;
     width: 20px;
-    height: 10px;
+    height: 1px;
     cursor: pointer;
     user-select: none;
-    &::before {
-      .mask(1,#fff);
-      border-radius: 4px;
-      transition: all 0.25s;
-      transform: scale(0);
-    }
-    &.active {
-      &::before {
+    &-inner {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      transform: translateY(50%);
+      width: 100%;
+
+      .default {
+        transition: all 0.25s;
+        transform: scale(0);
+      }
+
+      .block {
+        background: #fff;
+        width: 100%;
+        height: 14px;
+        border-radius: 4px;
+      }
+
+      .icon {
+        position: relative;
+        width: 100%;
+        transform: scale(0);
+        user-select: none;
+        img {
+          width: 100%;
+        }
+        &::before {
+          .mask(2);
+        }
+      }
+
+      .active {
         transform: scale(1.1);
       }
     }
   }
   &:hover {
     .aw-slider__btn {
-      &::before {
+      .default {
         transform: scale(0.9);
       }
     }
