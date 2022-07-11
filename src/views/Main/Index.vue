@@ -25,11 +25,11 @@
               <ComicAnthology
                 v-for="(item, index) in anthology.list"
                 :key="index"
+                :bad-anthology="anthology.bads"
                 :org-id="item.orgId"
                 :active="anthology.current"
                 :label="item.name"
                 :list="item.values"
-                :bad-anthology="anthology.bads"
                 @change="
                   (e) =>
                     changeAnthology(e, {
@@ -56,6 +56,7 @@ import {
   computed,
   defineComponent,
   onBeforeUnmount,
+  reactive,
   Ref,
   ref,
   shallowReactive,
@@ -177,7 +178,7 @@ export default defineComponent({
     const anthology: Type.Anthology & {
       /** 当前选中的集信息 */
       currentItem: ChangeReturns | null
-    } = shallowReactive({
+    } = reactive({
       current: '',
       currentItem: null,
       bads: [],
@@ -220,7 +221,7 @@ export default defineComponent({
       resetInitPlayerCurrentTime && (initPlayerCurrentTime.value = 0)
 
       // 错误地址判断
-      if (['kol-fans.fp.ps'].some((key) => value.includes(key))) {
+      if (['kol-fans.fp.ps', 'iqiyi'].some((key) => value.includes(key))) {
         anthology.bads.push(value)
         return false
       } else {

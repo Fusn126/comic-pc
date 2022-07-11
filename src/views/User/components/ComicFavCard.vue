@@ -19,14 +19,21 @@
       <!-- <span>收藏时间：{{ showDate }}</span> -->
     </div>
     <div class="tools">
-      <el-dropdown>
+      <Icon
+        class="tools-icon"
+        name="icon_love_hover"
+        title="取消收藏"
+        @click="deleteFav"
+      />
+      <!-- 太卡了 -->
+      <!-- <el-dropdown>
         <Icon class="tools-icon" name="more" />
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item @click="deleteFav">取消收藏</el-dropdown-item>
           </el-dropdown-menu>
         </template>
-      </el-dropdown>
+      </el-dropdown> -->
     </div>
   </AwDrag>
 </template>
