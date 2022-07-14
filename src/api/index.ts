@@ -1,11 +1,11 @@
 import { getax } from '@/common/request/index'
 import { getVal } from 'adicw-utils'
 import * as FnReturns from './type'
-import * as ApiReturns from './api.type'
+import * as ApiType from './api.type'
+import { newError, badRequestNotify } from './utils'
+
 export * from './type'
 export * from './pixiv'
-
-const newError = () => new Error('bad request')
 
 /**
  * 根据名称获取动漫列表
@@ -21,7 +21,7 @@ export async function searchComic(param: {
       data: {
         data: { results, pagetotal }
       }
-    } = await getax<ApiReturns.Search>(
+    } = await getax<ApiType.Search>(
       `api/search/${param.name}?page=${param.page}`
     )
     if (results instanceof Array) {
@@ -33,6 +33,7 @@ export async function searchComic(param: {
       throw newError()
     }
   } catch {
+    badRequestNotify('api/search')
     return {
       data: [],
       total: 0
@@ -63,7 +64,7 @@ export async function filterComic(param: {
       return v !== '' ? `${total}&${k}=${v}` : total
     }, 'api/filter?')
 
-    const { data } = await getax<ApiReturns.Filter>(api)
+    const { data } = await getax<ApiType.Filter>(api)
     return {
       data: getVal(() => data.data.results, []).map((item) => ({
         cover: item.cover,
@@ -74,6 +75,7 @@ export async function filterComic(param: {
       total: data?.data?.total || 0
     }
   } catch {
+    badRequestNotify('api/filter')
     return {
       data: [],
       total: 0
@@ -92,7 +94,7 @@ export async function getComicMain(
   try {
     const {
       data: { data }
-    } = await getax<ApiReturns.GetAnime>(`api/getAnime/${id}`)
+    } = await getax<ApiType.GetAnime>(`api/getAnime/${id}`)
     const playlist = getVal(() => data.playlist[0], []).map((item, index) => ({
       name: String(item.title),
       value: index
@@ -111,6 +113,7 @@ export async function getComicMain(
       cates: data.categories || []
     }
   } catch {
+    badRequestNotify('api/getAnime')
     return null
   }
 }
@@ -126,7 +129,7 @@ export async function getVideoUrl(
   try {
     const {
       data: { data }
-    } = await await getax<ApiReturns.GetVideo>(`api/getVideo/${key}`)
+    } = await await getax<ApiType.GetVideo>(`api/getVideo/${key}`)
     return Object.entries(data).map(([k, v]) => ({
       key: k,
       value: (v instanceof Array ? v : []).map((url) =>
@@ -134,6 +137,7 @@ export async function getVideoUrl(
       ) as string[]
     }))
   } catch (e) {
+    badRequestNotify('api/getVideo')
     console.error(e)
     return []
   }
@@ -145,7 +149,7 @@ export async function getVideoUrl(
  */
 export async function getHomeMixData(): Promise<FnReturns.GetHomeMixData | null> {
   try {
-    const { data } = await getax<ApiReturns.GetIndex>('api/getIndex')
+    const { data } = await getax<ApiType.GetIndex>('api/getIndex')
     const listFormat = (list: any[]) =>
       list.slice(0, 10).map((item) => ({
         cover: item.cover,
@@ -183,6 +187,7 @@ export async function getHomeMixData(): Promise<FnReturns.GetHomeMixData | null>
     }
     // return
   } catch (e) {
+    badRequestNotify('api/getIndex')
     console.error(e)
     return null
   }
@@ -194,7 +199,7 @@ export async function getHomeMixData(): Promise<FnReturns.GetHomeMixData | null>
  */
 export async function getComicFilterConfig(): Promise<FnReturns.GetComicFilterConfig> {
   try {
-    const { data } = await getax<ApiReturns.GetConfig>('api/getConfig')
+    const { data } = await getax<ApiType.GetConfig>('api/getConfig')
     return getVal(() => data.data.filtersConfig, []).map((item) => ({
       id: item.id,
       name: item.name,
@@ -204,6 +209,7 @@ export async function getComicFilterConfig(): Promise<FnReturns.GetComicFilterCo
       }))
     }))
   } catch {
+    badRequestNotify('api/getConfig')
     return []
   }
 }
