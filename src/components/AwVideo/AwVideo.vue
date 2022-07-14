@@ -19,7 +19,7 @@
     />
     <div
       :class="{ show: src && player.status !== -1 && controlBar.visible }"
-      class="aw-video__control show"
+      class="aw-video__control"
     >
       <AwVideoProgress
         ref="awVideoProgressComp"
