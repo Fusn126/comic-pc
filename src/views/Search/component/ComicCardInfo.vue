@@ -44,6 +44,8 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  border-radius: 8px;
+  overflow: hidden;
   header {
     display: flex;
     align-items: center;

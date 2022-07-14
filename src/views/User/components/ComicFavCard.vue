@@ -150,12 +150,12 @@ export default defineComponent({
   }
   .tools {
     position: absolute;
-    right: 18px;
-    top: 18px;
+    right: 16px;
+    top: 16px;
     z-index: 3;
     .tools-icon {
-      font-size: 22px;
-      color: rgba(255, 255, 255, 0.9);
+      font-size: 32px;
+      color: var(--warning-color);
       text-shadow: 0 0 14px rgb(0 0 0 / 44%);
       cursor: pointer;
     }

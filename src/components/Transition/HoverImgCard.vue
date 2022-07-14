@@ -133,6 +133,7 @@ export default defineComponent({
     height: 100%;
     overflow: hidden;
     transition: 1s @returnEasing;
+    border-radius: 8px;
   }
 
   .card-bg {
