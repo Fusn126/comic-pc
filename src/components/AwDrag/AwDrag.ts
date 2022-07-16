@@ -100,8 +100,8 @@ export const AwDrag = defineComponent({
     })
 
     const getDargTransferData = (e: DragEvent) => {
-      return jsonParse<DargTransferData | null>(
-        e.dataTransfer?.getData('aw-drag') as any,
+      return jsonParse<DargTransferData | null, null>(
+        e.dataTransfer?.getData('aw-drag'),
         null
       )
     }
