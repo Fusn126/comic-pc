@@ -11,7 +11,8 @@ import {
   onBeforeUnmount,
   provide,
   InjectionKey,
-  inject
+  inject,
+  getCurrentInstance
 } from 'vue'
 import { domObserver } from '@/utils/dom'
 import { useEventListener } from '@/utils/vant/useEventListener'
@@ -143,5 +144,13 @@ export function useIsDev() {
   return {
     get,
     isDev
+  }
+}
+
+// expose public api
+export function useExpose<T = Record<string, any>>(apis: T) {
+  const instance = getCurrentInstance() as any
+  if (instance) {
+    Object.assign(instance.proxy, apis)
   }
 }

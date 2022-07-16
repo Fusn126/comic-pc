@@ -41,6 +41,12 @@ export default defineComponent({
         icon: 'user'
       },
       {
+        name: 'Pixiv',
+        routeName: 'Pixiv',
+        routePath: 'pixiv',
+        icon: 'iccosplay'
+      },
+      {
         name: '系统设置',
         routeName: 'Setting',
         routePath: 'setting',

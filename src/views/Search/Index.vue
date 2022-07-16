@@ -1,26 +1,21 @@
 <template>
   <div id="search">
-    <header class="search-header" :class="{ using: searchInput.using }">
-      <SearchInput
-        v-model="filter.name"
-        v-model:using="searchInput.using"
-        class="search-header__search"
-        @search="searchByName()"
-      >
-        <template #icon>
-          <Icon
-            :name="hasSearchKey ? 'delete1' : 'iconsearch'"
-            @click="!hasSearchKey ? searchByName() : resetName()"
-          />
-        </template>
-      </SearchInput>
+    <SearchHeader
+      v-model="filter.name"
+      :history="searchHistoryList"
+      @searchEnter="searchByName()"
+      @searchClick="!hasSearchKey ? searchByName() : resetName()"
+      @deleteHistory="deleteHistory"
+      @clearHistory="clearHistory"
+    >
       <Icon
-        class="search-header__filter"
+        class="filter-icon"
         name="filter"
         :class="{ active: filterVisible }"
         @click="filterVisible = !filterVisible"
       />
-    </header>
+    </SearchHeader>
+
     <transition enter-active-class="fade-in">
       <article v-show="filterVisible" class="search-filter">
         <AwRadio
@@ -103,7 +98,7 @@ import { getVal, wait, smoothPush } from 'adicw-utils'
 
 import AwRadio from '@comps/Form/AwRadio.vue'
 import ComicCard from './component/ComicCard.vue'
-import SearchInput from './component/SearchInput.vue'
+import SearchHeader from '@/components/Form/SearchHeader.vue'
 import LoadingCodeRun from '@comps/Loading/LoadingCodeRun.vue'
 import EmptyImgBlock from '@comps/Block/EmptyImgBlock.vue'
 
@@ -184,12 +179,19 @@ function filterModule(init: () => void) {
     resetName
   }
 }
-function searchInputModule() {
-  const searchInput = reactive({
-    using: false
-  })
+function searchHistoryModule() {
+  const searchHistory = useSearchHistory()
+  const searchHistoryList = computed(() => searchHistory.list)
+  const deleteHistory = (v: string) => {
+    searchHistory.delete(v)
+  }
+  const clearHistory = () => {
+    searchHistory.clear()
+  }
   return {
-    searchInput
+    searchHistoryList,
+    deleteHistory,
+    clearHistory
   }
 }
 export default defineComponent({
@@ -199,7 +201,7 @@ export default defineComponent({
     ComicCard,
     LoadingCodeRun,
     EmptyImgBlock,
-    SearchInput
+    SearchHeader
   },
   setup() {
     const searchMainEl = ref<HTMLElement>()
@@ -302,13 +304,14 @@ export default defineComponent({
       resetFilter,
       isEmptySearch,
       ...filterModuleArgs,
-      ...searchInputModule()
+      ...searchHistoryModule()
     }
   }
 })
 </script>
 <style lang="less" scoped>
 @import '~styles/var';
+
 #search {
   @rootGap: 30px;
   position: relative;
@@ -318,60 +321,14 @@ export default defineComponent({
   width: 100%;
   height: 100%;
   overflow: hidden;
+
   .search {
     @radius: 24px;
-    @headerHeight: 48px;
+
     .box {
       background: var(--box-bg-color);
     }
-    &-header {
-      position: relative;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      gap: 26px;
-      width: 100%;
-      height: @headerHeight;
-      transition: all 0.625s;
-      z-index: 333;
-      &.using {
-        transform: translate(50% - 20%, 100%);
-        .search-header__search {
-          width: 40% !important;
-        }
-      }
 
-      &__search {
-        width: 26%;
-        height: 100%;
-        i {
-          position: absolute;
-          right: 16px;
-          top: 0;
-          bottom: 0;
-          margin: auto 0;
-          height: max-content;
-          font-size: 20px;
-          cursor: pointer;
-          transition: all 0.25s;
-          &:hover {
-            opacity: 0.6;
-          }
-        }
-      }
-      &__filter {
-        color: var(--font-color);
-        font-size: 28px;
-        cursor: pointer;
-        transition: all 0.25s;
-        &.active {
-          color: var(--primary-color);
-        }
-        &:hover {
-          .active;
-        }
-      }
-    }
     &-filter {
       .box;
       display: flex;
@@ -384,12 +341,14 @@ export default defineComponent({
       border-bottom-left-radius: @radius;
       user-select: none;
     }
+
     &-main {
       .box;
       position: relative;
       flex: 1;
       border-top-left-radius: @radius;
       overflow-y: scroll;
+
       &__content {
         display: grid;
         grid-template-columns: repeat(var(--search-col-count), 1fr);
@@ -399,6 +358,7 @@ export default defineComponent({
         box-sizing: border-box;
         animation-duration: 0.25s;
       }
+
       &__loading {
         position: absolute;
         left: 0;
@@ -410,6 +370,7 @@ export default defineComponent({
         animation-duration: 0.5s;
       }
     }
+
     &-page {
       position: absolute;
       left: 0;
@@ -424,10 +385,26 @@ export default defineComponent({
       transition: all 0.25s;
       opacity: 0.2;
       transform: translateY(70%);
+
       &:hover {
         opacity: 1;
         transform: translateY(0);
       }
+    }
+  }
+
+  .filter-icon {
+    color: var(--font-color);
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.25s;
+
+    &.active {
+      color: var(--primary-color);
+    }
+
+    &:hover {
+      .active;
     }
   }
 }

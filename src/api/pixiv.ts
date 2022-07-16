@@ -18,6 +18,8 @@ export async function getComicImglist({
   limit?: number
   /** 偏移数量 */
   offset?: number
+  sort?: 'hot'
+  type?: number
 }): Promise<FnReturns.GetComicImglistReturn> {
   try {
     const realName = name

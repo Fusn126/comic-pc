@@ -15,7 +15,14 @@ export default defineComponent({
   name: 'AppRouter',
   setup() {
     const $route = useRoute()
-    const routePaths = ['home', 'search', 'user', 'setting', 'comicmain']
+    const routePaths = [
+      'home',
+      'search',
+      'user',
+      'pixiv',
+      'setting',
+      'comicmain'
+    ]
     const transition = ref('')
 
     watch(
