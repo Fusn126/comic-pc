@@ -165,13 +165,21 @@ export default defineComponent({
     const routeParam = computed(() => ({
       episode: Number(route.query.episode) || -1,
       progress: Number(route.query.progress) || -1,
-      orgId: String(route.query.orgId) || ''
+      orgId: String(route.query.orgId) || '',
+      latest: !!Number(route.query.latest)
     }))
 
     const { comic, comicUrls, ...comicInfoModuleArgs } = comicInfoModule(
       toRef(props, 'id'),
       () => {
-        !!~routeParam.value.episode ? initInRoute() : init()
+        if (routeParam.value.latest) {
+          return initLatest()
+        }
+        if (!!~routeParam.value.episode) {
+          return initInRoute()
+        } else {
+          return init()
+        }
       }
     )
     /** 选集 */
@@ -282,7 +290,7 @@ export default defineComponent({
       anthology.currentItem = null
     }
     /**
-     * 默认初始化
+     * 初始化-默认
      */
     const init = async () => {
       // 获取对应缓存
@@ -357,6 +365,28 @@ export default defineComponent({
         content: `已为您定位到 ${value.name} ${sToMs(
           routeParam.value.progress
         )}`,
+        duration: 3000
+      })
+    }
+    /**
+     * 初始化-最新集
+     */
+    const initLatest = async () => {
+      const mostAnthologyList = [...anthology.list].sort(
+        (a, b) => b.values.length - a.values.length
+      )[0]
+      if (!mostAnthologyList) return
+      changeAnthology(
+        {
+          ...mostAnthologyList.values[mostAnthologyList.values.length - 1],
+          orgId: mostAnthologyList.orgId
+        },
+        {
+          isAddCache: false
+        }
+      )
+      awVideoComp.value?.notify({
+        content: `已为您定位到 最新一集`,
         duration: 3000
       })
     }

@@ -60,6 +60,7 @@ export default defineComponent({
       const data = await Api.getHomeMixData()
       if (data) {
         comicUpdate.setComic(data.perweek)
+        comicUpdate.notify()
         Object.entries(data).forEach(([k, v]) => {
           comic[k as keyof Api.GetHomeMixData] = v
         })
