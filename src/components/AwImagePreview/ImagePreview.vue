@@ -438,7 +438,7 @@ export default defineComponent({
   }
   .img-name {
     position: absolute;
-    top: 50px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
     font-size: 18px;
@@ -507,7 +507,7 @@ export default defineComponent({
   .imgplayer-tool {
     position: absolute;
     left: 50%;
-    bottom: 50px;
+    bottom: 20px;
     transform: translateX(-50%);
     display: flex;
     justify-content: space-evenly;
