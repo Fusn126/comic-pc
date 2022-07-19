@@ -53,6 +53,8 @@
     <EmptyImgBlock v-show="!hasList" content="无聊如你" height="60%">
       <img src="~static/img/history-empty.png" />
     </EmptyImgBlock>
+
+    <AdBreakTop target=".play-history" />
   </BotLoad>
 </template>
 

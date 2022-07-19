@@ -17,7 +17,10 @@
     </SearchHeader>
 
     <transition enter-active-class="fade-in">
-      <article v-show="filterVisible" class="search-filter">
+      <article
+        v-show="filterVisible && !filterConfig.pending"
+        class="search-filter"
+      >
         <AwRadio
           v-model="filter.cate"
           label="分类"
@@ -124,6 +127,7 @@ function filterModule(init: () => void) {
   })
   /** 筛选参数 */
   const filterConfig = shallowReactive({
+    pending: true,
     org: [] as Api.GetComicFilterConfig,
     get cate() {
       return this.org.map((item) => ({
@@ -166,6 +170,7 @@ function filterModule(init: () => void) {
       filter.cate = filterConfig.org[0].id
       filter.type = getVal(() => filterConfig.org[0].value[0].value, '')
     }
+    filterConfig.pending = false
     init()
   })()
 

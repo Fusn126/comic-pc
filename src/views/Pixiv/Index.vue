@@ -10,6 +10,7 @@
       v-if="state.waterfallKey"
       target="#pixiv"
       :column="5"
+      :column-size="6"
       :requset="fetchPixiv"
       :gap="26"
     >
@@ -35,6 +36,8 @@
         </WaterfallColumn>
       </template>
     </Waterfall>
+
+    <AdBreakTop target="#pixiv" />
   </div>
 </template>
 
@@ -103,8 +106,8 @@ const onSearch = () => {
       }
       &:hover {
         img {
-          box-shadow: 0 0 14px #000;
-          transform: scale(0.9);
+          box-shadow: 0 0 14px rgba(0, 0, 0, 0.1);
+          transform: scale(0.98);
         }
       }
     }

@@ -119,13 +119,11 @@ export default defineComponent({
 
 <style lang="less" scoped>
 .attached-container {
-  transition: all 0.25s;
   position: fixed;
   top: 0;
   left: 0;
   z-index: -1111;
   opacity: 0;
   transition: opacity 0.25s;
-  background: #fff;
 }
 </style>

@@ -20,6 +20,8 @@
         <HomeBlockComic title="热门国漫" :list="comic.cn" />
       </div>
     </div>
+
+    <AdBreakTop target="#home" />
   </div>
 </template>
 
