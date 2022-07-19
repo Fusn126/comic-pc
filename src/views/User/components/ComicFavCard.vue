@@ -103,7 +103,7 @@ export default defineComponent({
     position: relative;
     width: 100%;
     aspect-ratio: 9/12.7;
-    border-radius: 24px;
+    border-radius: var(--df-radius);
     overflow: hidden;
     transition: all 0.25s;
     img {

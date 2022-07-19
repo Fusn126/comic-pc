@@ -147,7 +147,7 @@ export default defineComponent({
   overflow-x: hidden;
   padding: 30px;
   box-sizing: border-box;
-  border-top-left-radius: 24px;
+  border-top-left-radius: var(--df-radius);
 
   h2 {
     i {

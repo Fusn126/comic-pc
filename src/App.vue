@@ -83,7 +83,7 @@ export default defineComponent({
     width: 280px;
     height: calc(100% - @frameTop*2);
     background: var(--aside-bg-color);
-    border-radius: 24px;
+    border-radius: var(--df-radius);
     padding-left: @frameTop;
     box-sizing: border-box;
     animation: slide-in @slideDruation forwards;

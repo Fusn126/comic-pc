@@ -328,8 +328,6 @@ export default defineComponent({
   overflow: hidden;
 
   .search {
-    @radius: 24px;
-
     .box {
       background: var(--box-bg-color);
     }
@@ -342,8 +340,8 @@ export default defineComponent({
       width: 100%;
       padding: 16px 30px;
       box-sizing: border-box;
-      border-top-left-radius: @radius;
-      border-bottom-left-radius: @radius;
+      border-top-left-radius: var(--df-radius);
+      border-bottom-left-radius: var(--df-radius);
       user-select: none;
     }
 
@@ -351,7 +349,7 @@ export default defineComponent({
       .box;
       position: relative;
       flex: 1;
-      border-top-left-radius: @radius;
+      border-top-left-radius: var(--df-radius);
       overflow-y: scroll;
 
       &__content {

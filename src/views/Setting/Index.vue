@@ -220,8 +220,8 @@ export default defineComponent({
     background: var(--box-bg-color);
     padding: 30px;
     box-sizing: border-box;
-    border-top-left-radius: 24px;
-    border-bottom-left-radius: 24px;
+    border-top-left-radius: var(--df-radius);
+    border-bottom-left-radius: var(--df-radius);
     margin-bottom: 30px;
 
     &__title {
