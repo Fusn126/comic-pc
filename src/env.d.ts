@@ -22,3 +22,13 @@ declare type ValueOf<T> = T[keyof T]
  * 动漫id
  */
 declare type ComicId = string | number
+
+/**
+ * 检出promise返回值类型 Awaited
+ */
+// declare type PickPromiseResult<T> = T extends Promise<infer U> ? U : never
+
+/**
+ * 检出promise异步函数的返回值类型
+ */
+declare type PickPromiseFnResult<T> = Awaited<ReturnType<T>>

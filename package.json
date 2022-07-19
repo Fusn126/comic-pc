@@ -16,7 +16,7 @@
     "pinia": "^2.0.9",
     "video.js": "^7.17.0",
     "vue": "^3.2.31",
-    "vue-router": "^4.0.8"
+    "vue-router": "^4.1.2"
   },
   "devDependencies": {
     "@types/video.js": "^7.3.31",

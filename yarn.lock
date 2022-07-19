@@ -1380,10 +1380,10 @@
     "@vue/compiler-dom" "3.2.31"
     "@vue/shared" "3.2.31"
 
-"@vue/devtools-api@^6.0.0-beta.18", "@vue/devtools-api@^6.0.0-beta.21":
-  "integrity" "sha512-FqC4s3pm35qGVeXRGOjTsRzlkJjrBLriDS9YXbflHLsfA9FrcKzIyWnLXoNm+/7930E8rRakXuAc2QkC50swAw=="
-  "resolved" "https://registry.npmmirror.com/@vue/devtools-api/download/@vue/devtools-api-6.0.0-beta.21.1.tgz"
-  "version" "6.0.0-beta.21.1"
+"@vue/devtools-api@^6.0.0-beta.21", "@vue/devtools-api@^6.1.4":
+  "integrity" "sha512-OEgAMeQXvCoJ+1x8WyQuVZzFo0wcyCmUR3baRVLmKBo1LmYZWMlRiXlux5jd0fqVJu6PfDbOrZItVqUEzLobeQ=="
+  "resolved" "https://registry.npmjs.org/@vue/devtools-api/-/devtools-api-6.2.1.tgz"
+  "version" "6.2.1"
 
 "@vue/eslint-config-typescript@^10.0.0":
   "integrity" "sha512-F94cL8ug3FaYXlCfU5/wiGjk1qeadmoBpRGAOBq+qre3Smdupa59dd6ZJrsfRODpsMPyTG7330juMDsUvpZ3Rw=="
@@ -4232,22 +4232,22 @@
     "lodash" "^4.17.21"
     "semver" "^7.3.5"
 
-"vue-router@^4.0.8":
-  "integrity" "sha512-CPXvfqe+mZLB1kBWssssTiWg4EQERyqJZes7USiqfW9B5N2x+nHlnsM1D3b5CaJ6qgCvMmYJnz+G0iWjNCvXrg=="
-  "resolved" "https://registry.npmmirror.com/vue-router/download/vue-router-4.0.12.tgz"
-  "version" "4.0.12"
+"vue-router@^4.1.2":
+  "integrity" "sha512-5BP1qXFncVRwgV/XnqzsKApdMjQPqWIpoUBdL1ynz8HyLxIX/UDAx7Ql2BjmA5CXT/p61JfZvkpiFWFpaqcfag=="
+  "resolved" "https://registry.npmjs.org/vue-router/-/vue-router-4.1.2.tgz"
+  "version" "4.1.2"
   dependencies:
-    "@vue/devtools-api" "^6.0.0-beta.18"
+    "@vue/devtools-api" "^6.1.4"
 
 "vue-tsc@^0.32.1":
   "integrity" "sha512-HR34cFr14GDpV9WMX0kMxIAvieg735Q5sQ67MkIBEXtjuR2Yo5y43noiMMjoHZ6YqcjidXlCFbBiJrplLX/W7w=="
-  "resolved" "https://registry.npmmirror.com/vue-tsc/-/vue-tsc-0.32.1.tgz"
+  "resolved" "https://registry.npmjs.org/vue-tsc/-/vue-tsc-0.32.1.tgz"
   "version" "0.32.1"
   dependencies:
     "@volar/shared" "0.32.1"
     "vscode-vue-languageservice" "0.32.1"
 
-"vue@^2.6.0 || ^3.2.0", "vue@^2.6.14 || ^3.2.0", "vue@^3.0.0", "vue@^3.0.0-0 || ^2.6.0", "vue@^3.2.0", "vue@^3.2.31", "vue@2 || 3", "vue@3.2.31":
+"vue@^2.6.0 || ^3.2.0", "vue@^2.6.14 || ^3.2.0", "vue@^3.0.0-0 || ^2.6.0", "vue@^3.2.0", "vue@^3.2.31", "vue@2 || 3", "vue@3.2.31":
   "integrity" "sha512-odT3W2tcffTiQCy57nOT93INw1auq5lYLLYtWpPYQQYQOOdHiqFct9Xhna6GJ+pJQaF67yZABraH47oywkJgFw=="
   "resolved" "https://registry.npmmirror.com/vue/-/vue-3.2.31.tgz"
   "version" "3.2.31"
