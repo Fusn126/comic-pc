@@ -156,4 +156,7 @@ export type GetComicImglistReturn = {
   date: string
   w: number
   h: number
+  commentTotal: number
+  likeTotal: number
+  tags: string
 }[]

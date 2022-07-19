@@ -10,7 +10,8 @@ import { getVal } from 'adicw-utils'
 export async function getComicImglist({
   name = '',
   limit = 20,
-  offset = 0
+  offset = 0,
+  sort = 'hot'
 }: {
   /** 动漫名称 */
   name?: string
@@ -18,7 +19,7 @@ export async function getComicImglist({
   limit?: number
   /** 偏移数量 */
   offset?: number
-  sort?: 'hot'
+  sort?: 'hot' | 'new'
   type?: number
 }): Promise<FnReturns.GetComicImglistReturn> {
   try {
@@ -31,7 +32,7 @@ export async function getComicImglist({
         ''
       )
     const { data } = await dfGetax<ApiReturns.VilipixIllust>(
-      `https://www.vilipix.com/api/v1/picture/public?limit=${limit}&tags=${realName}&sort=new&offset=${offset}`
+      `https://www.vilipix.com/api/v1/picture/public?limit=${limit}&tags=${realName}&sort=${sort}&offset=${offset}`
     )
     return getVal(() => data.data.rows, []).map((item) => ({
       date: item.created_at,
@@ -41,7 +42,10 @@ export async function getComicImglist({
       id: item.picture_id,
       desc: '',
       w: item.width,
-      h: item.height
+      h: item.height,
+      commentTotal: item.comment_total,
+      likeTotal: item.like_total,
+      tags: item.tags
     }))
   } catch (e) {
     return []

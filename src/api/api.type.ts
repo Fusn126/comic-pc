@@ -213,6 +213,10 @@ export interface VilipixIllust {
       width: number
       /** 图片高度 */
       height: number
+      /** 评论数量 */
+      comment_total: number
+      /** 喜欢数量 */
+      like_total: number
     }[]
     /** 结果总数 */
     count: number
