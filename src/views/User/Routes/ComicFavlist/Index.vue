@@ -15,7 +15,7 @@
       width="400px"
       height="max-content"
     >
-      <img src="~static/img/history-empty.png" />
+      <img src="~static/img/history-empty.png" style="width: 100%" />
     </EmptyImgBlock>
   </div>
 </template>

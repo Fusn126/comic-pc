@@ -381,7 +381,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .imgplayer {
   position: fixed;
   top: 0;

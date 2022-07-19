@@ -1,6 +1,6 @@
 <template>
   <div class="empty-img-block">
-    <div>
+    <div class="empty-img-block__inner">
       <slot />
     </div>
     <p>{{ content }}</p>
@@ -42,12 +42,9 @@ export default defineComponent({
   &::after {
     .mask;
   }
-  div {
+  &__inner {
     width: 300px;
     overflow: hidden;
-    ::v-global(img) {
-      width: 100%;
-    }
   }
 
   p {
