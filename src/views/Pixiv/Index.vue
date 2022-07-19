@@ -30,7 +30,7 @@
               </template>
             </AwVirtualList> -->
             <div v-for="item in data" :key="item.id" class="pixiv-img">
-              <BaseImg :src="item.preurl" />
+              <BaseImg :src="item.preurl" @click="imgPreview(data, item)" />
             </div>
           </template>
         </WaterfallColumn>
@@ -46,7 +46,8 @@ import { nextTick, reactive } from 'vue'
 import { Waterfall, WaterfallColumn, Type } from '@/components/AwWaterfall'
 import SearchHeader from '@/components/Form/SearchHeader.vue'
 // import { AwVirtualList, AwVirtualListItem } from '@/components/AwVirtualList'
-import { getComicImglist } from '@/api'
+import { getComicImglist, GetComicImglistReturn } from '@/api'
+import { ImagePreview } from '@/components/AwImagePreview/ImagePreview'
 
 const pixivFilter = reactive({
   name: ''
@@ -75,6 +76,15 @@ const onSearch = () => {
     pixivFilter.name = ''
   }
   resetWaterfall()
+}
+const imgPreview = (
+  data: GetComicImglistReturn,
+  item: GetComicImglistReturn[0]
+) => {
+  ImagePreview({
+    images: data.map((item) => item.orgurl),
+    current: item.orgurl
+  })
 }
 </script>
 <style lang="less" scoped>

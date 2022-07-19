@@ -11,7 +11,7 @@
         </p>
         <div
           class="imgplayer-img"
-          :style="imgStyle"
+          :style="imgContainerStyle"
           @mousedown.prevent="startMove"
           @mousemove.prevent="inMove"
           @mouseup.prevent="endMove"
@@ -40,7 +40,7 @@
         <Icon name="narrow" title="缩小" @click="narrow" />
         <Icon name="enlarge" title="放大" @click="enlarge" />
         <Icon name="details" title="详情" />
-        <Icon name="screen-restore" title="还原" @click="defaultImg" />
+        <Icon name="screen-restore" title="还原" @click="resetImg" />
         <Icon name="artwork" title="查看原图" @click="artwork" />
         <Icon
           name="rotate_b"
@@ -59,6 +59,7 @@
 import {
   computed,
   ComputedRef,
+  CSSProperties,
   defineComponent,
   PropType,
   reactive,
@@ -88,8 +89,12 @@ function mousewheeModule(enlarge: () => void, narrow: () => void) {
   }
 }
 // 操作
-function handleModule(imgIndex: ImgIndex, imgLength: ComputedRef<number>) {
-  const self = reactive<Self>({
+function handleModule(
+  props: ImagePreviewProps,
+  imgIndex: ImgIndex,
+  imgLength: ComputedRef<number>
+) {
+  const self: Self = reactive({
     scale: 1,
     rotate: 0,
     startX: 0,
@@ -98,8 +103,23 @@ function handleModule(imgIndex: ImgIndex, imgLength: ComputedRef<number>) {
     finalY: 0,
     oldX: 0,
     oldY: 0,
-    isDown: false
+    isDown: false,
+    mode: 'horizontal'
   })
+  const imgContainerStyle = computed<CSSProperties>(() => ({
+    transform: 'scale(' + self.scale + ') rotate(' + self.rotate + 'deg)',
+    left: self.finalX + 'px',
+    top: self.finalY + 'px'
+  }))
+  // const imgStyle = computed<CSSProperties>(() =>
+  //   self.mode === 'horizontal'
+  //     ? {
+  //         width: '100%'
+  //       }
+  //     : {
+  //         height: '100%'
+  //       }
+  // )
 
   const enlarge = () => {
     if (self.scale <= 3) {
@@ -116,22 +136,34 @@ function handleModule(imgIndex: ImgIndex, imgLength: ComputedRef<number>) {
   const rotateAnClockwise = () => {
     self.rotate += 90
   }
-  const defaultImg = () => {
+  const resetImg = () => {
     self.rotate = 0
     self.scale = 1
     self.finalX = 0
     self.finalY = 0
   }
-  const nextImg = () => {
-    defaultImg()
+  const loadImg = (src: string) =>
+    new Promise((resolve) => {
+      const image = new Image()
+      image.src = src
+      image.onload = () => {
+        self.mode = image.width > image.height ? 'horizontal' : 'portrait'
+        resolve(1)
+      }
+    })
+  const nextImg = async () => {
+    resetImg()
+    let index = -1
     if (imgIndex.value == imgLength.value - 1) {
-      imgIndex.value = 0
+      index = 0
     } else {
-      imgIndex.value++
+      index = imgIndex.value + 1
     }
+    // await loadImg(props.list[index])
+    imgIndex.value = index
   }
   const prevImg = () => {
-    defaultImg()
+    resetImg()
     if (imgIndex.value == 0) {
       imgIndex.value = imgLength.value - 1
     } else {
@@ -165,22 +197,12 @@ function handleModule(imgIndex: ImgIndex, imgLength: ComputedRef<number>) {
     rotateAnClockwise,
     nextImg,
     prevImg,
-    defaultImg,
+    resetImg,
     startMove,
     inMove,
     endMove,
-    self
-  }
-}
-// 样式
-function styleModule(self: Self) {
-  const imgStyle = computed(() => ({
-    transform: 'scale(' + self.scale + ') rotate(' + self.rotate + 'deg)',
-    left: self.finalX + 'px',
-    top: self.finalY + 'px'
-  }))
-  return {
-    imgStyle
+    self,
+    imgContainerStyle
   }
 }
 // 图片加载器
@@ -328,6 +350,7 @@ export default defineComponent({
       visible
     )
     const { enlarge, narrow, self, ...handleModuleArgs } = handleModule(
+      props,
       imgIndex,
       imgLength
     )
@@ -352,7 +375,6 @@ export default defineComponent({
       ...modeModuleArgs,
       ...handleModuleArgs,
       ...imgLoader(currentImg),
-      ...styleModule(self),
       ...mousewheeModule(enlarge, narrow)
     }
   }
@@ -368,18 +390,23 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-  padding: 40px 20px;
+  padding: 40px 60px;
   width: 100vw;
   height: 100vh;
   z-index: 2022;
   background: rgba(0, 0, 0, 0.5);
   color: #fff;
   animation-duration: 0.25s;
+  user-select: none;
   &-img {
     position: relative;
     transition: transform 0.25s;
     z-index: -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: 100%;
+    aspect-ratio: 1/1;
     img {
       position: relative;
       height: 100%;

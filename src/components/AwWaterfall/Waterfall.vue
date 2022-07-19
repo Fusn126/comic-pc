@@ -1,6 +1,6 @@
 <template>
   <div ref="selfEl" class="aw-waterfall" :style="selfStyle">
-    <slot name="content" :column="column" />
+    <slot name="content" :column="column" :orgData="reList.data" />
   </div>
 </template>
 

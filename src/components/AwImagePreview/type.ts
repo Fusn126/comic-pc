@@ -8,6 +8,13 @@ export type ComponentInstance = ComponentPublicInstance<{}, any>
 export interface Options {
   images: Img[]
   current: Img
+  // rect?: {
+  //   width: number
+  //   height: number
+  //   x: number
+  //   y: number
+  //   path: string
+  // }
 }
 
 export type ImgIndex = Ref<number>
@@ -21,6 +28,7 @@ export interface Self {
   oldX: number
   oldY: number
   isDown: boolean
+  mode: 'horizontal' | 'portrait'
 }
 export interface ModeArgs {
   currentImg: ComputedRef<Img>
