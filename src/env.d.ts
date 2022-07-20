@@ -5,11 +5,6 @@ declare module '*.vue' {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
   const component: DefineComponent<{}, {}, any>
 
-  // 给`this.$http`提供类型
-  // interface ComponentCustomProperties {
-  //   $axios: AxiosInstance
-  // }
-
   export default component
 }
 
