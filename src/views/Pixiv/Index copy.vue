@@ -7,21 +7,45 @@
         @searchEnter="resetWaterfall()"
         @searchClick="onSearch"
       />
-      <AwVirtualWaterfall
+      <Waterfall
         v-if="state.waterfallKey"
         target=".pixiv-content"
         :column="5"
+        :column-size="6"
         :requset="fetchPixiv"
         :gap="26"
       >
-        <template #item="{ item }">
-          <PixivContentItem
-            :style="{ opacity: state.pixivMainId === item.id ? 0 : 1 }"
-            :detail="item"
-            @click="(e) => imgPreview(e, item)"
-          />
+        <template #content="{ column }">
+          <WaterfallColumn v-for="col in column" :key="col">
+            <template #content="{ data }">
+              <!-- <AwVirtualList target=".pixiv-content" :list="data">
+              <template #content="{ list }">
+                <AwVirtualListItem
+                  v-for="item in list"
+                  :id="item.id"
+                  :key="item.id"
+                  class="pixiv-img"
+                >
+                  <img :src="item.preurl" alt="" />
+                </AwVirtualListItem>
+              </template>
+            </AwVirtualList> -->
+              <div
+                v-for="item in data"
+                :key="item.id"
+                class="pixiv-img"
+                :style="{ opacity: state.pixivMainId === item.id ? 0 : 1 }"
+              >
+                <BaseImg
+                  :lazy="false"
+                  :src="item.preurl"
+                  @click="(e) => imgPreview(e, item)"
+                />
+              </div>
+            </template>
+          </WaterfallColumn>
         </template>
-      </AwVirtualWaterfall>
+      </Waterfall>
       <AdBreakTop target=".pixiv-content" />
     </div>
 
@@ -37,12 +61,12 @@
 
 <script lang="ts" setup>
 import { computed, nextTick, reactive } from 'vue'
-import { Type, AwVirtualWaterfall } from '@/components/AwVirtualWaterfall'
+import { Waterfall, WaterfallColumn, Type } from '@/components/AwWaterfall'
 import SearchHeader from '@/components/Form/SearchHeader.vue'
+// import { AwVirtualList, AwVirtualListItem } from '@/components/AwVirtualList'
 import { getComicImglist, GetComicImglistReturn } from '@/api'
 import { toPixivMain } from '@/hooks/router'
 import { useRoute } from 'vue-router'
-import PixivContentItem from './component/PixivContentItem.vue'
 
 const $route = useRoute()
 const pixivFilter = reactive({
@@ -93,14 +117,12 @@ const imgPreview = (e: Event, item: GetComicImglistReturn[0]) => {
 </script>
 <style lang="less" scoped>
 #pixiv {
-  @offset: 26px;
   position: relative;
-  width: calc(100% - @offset);
-  height: calc(100% - @offset);
-  margin: @offset 0 0 @offset;
+  width: 100%;
+  height: 100%;
+  padding: 26px 0 0 26px;
   box-sizing: border-box;
   overflow: hidden;
-
   .pixiv {
     &-header {
       position: sticky;
@@ -109,7 +131,6 @@ const imgPreview = (e: Event, item: GetComicImglistReturn[0]) => {
       padding: 0 12px;
       box-sizing: border-box;
     }
-
     &-content {
       width: 100%;
       height: 100%;
@@ -117,6 +138,22 @@ const imgPreview = (e: Event, item: GetComicImglistReturn[0]) => {
       box-sizing: border-box;
       overflow-x: hidden;
       overflow-y: auto;
+    }
+    &-img {
+      width: 100%;
+      img {
+        width: 100%;
+        display: block;
+        border-radius: 14px;
+        transition: all 0.25s;
+        cursor: pointer;
+      }
+      &:hover {
+        img {
+          box-shadow: 0 0 14px rgba(0, 0, 0, 0.1);
+          transform: scale(0.98);
+        }
+      }
     }
   }
 }
