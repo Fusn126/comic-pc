@@ -1,23 +1,24 @@
 <template>
   <div id="pixiv">
-    <SearchHeader
-      v-model="pixivFilter.name"
-      class="pixiv-header"
-      @searchEnter="resetWaterfall()"
-      @searchClick="onSearch"
-    />
-    <Waterfall
-      v-if="state.waterfallKey"
-      target="#pixiv"
-      :column="5"
-      :column-size="6"
-      :requset="fetchPixiv"
-      :gap="26"
-    >
-      <template #content="{ column }">
-        <WaterfallColumn v-for="col in column" :key="col">
-          <template #content="{ data }">
-            <!-- <AwVirtualList target="#pixiv" :list="data">
+    <div class="pixiv-content">
+      <SearchHeader
+        v-model="pixivFilter.name"
+        class="pixiv-header"
+        @searchEnter="resetWaterfall()"
+        @searchClick="onSearch"
+      />
+      <Waterfall
+        v-if="state.waterfallKey"
+        target=".pixiv-content"
+        :column="5"
+        :column-size="6"
+        :requset="fetchPixiv"
+        :gap="26"
+      >
+        <template #content="{ column }">
+          <WaterfallColumn v-for="col in column" :key="col">
+            <template #content="{ data }">
+              <!-- <AwVirtualList target=".pixiv-content" :list="data">
               <template #content="{ list }">
                 <AwVirtualListItem
                   v-for="item in list"
@@ -29,31 +30,51 @@
                 </AwVirtualListItem>
               </template>
             </AwVirtualList> -->
-            <div v-for="item in data" :key="item.id" class="pixiv-img">
-              <BaseImg :src="item.preurl" @click="imgPreview(data, item)" />
-            </div>
-          </template>
-        </WaterfallColumn>
-      </template>
-    </Waterfall>
+              <div
+                v-for="item in data"
+                :key="item.id"
+                class="pixiv-img"
+                :style="{ opacity: state.pixivMainId === item.id ? 0 : 1 }"
+              >
+                <BaseImg
+                  :lazy="false"
+                  :src="item.preurl"
+                  @click="(e) => imgPreview(e, item)"
+                />
+              </div>
+            </template>
+          </WaterfallColumn>
+        </template>
+      </Waterfall>
+      <AdBreakTop target=".pixiv-content" />
+    </div>
 
-    <AdBreakTop target="#pixiv" />
+    <router-view v-slot="{ Component }">
+      <!-- <transition name="route-transition"> -->
+      <keep-alive>
+        <component :is="Component" />
+      </keep-alive>
+      <!-- </transition> -->
+    </router-view>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, reactive } from 'vue'
+import { computed, nextTick, reactive } from 'vue'
 import { Waterfall, WaterfallColumn, Type } from '@/components/AwWaterfall'
 import SearchHeader from '@/components/Form/SearchHeader.vue'
 // import { AwVirtualList, AwVirtualListItem } from '@/components/AwVirtualList'
 import { getComicImglist, GetComicImglistReturn } from '@/api'
-import { ImagePreview } from '@/components/AwImagePreview/ImagePreview'
+import { toPixivMain } from '@/hooks/router'
+import { useRoute } from 'vue-router'
 
+const $route = useRoute()
 const pixivFilter = reactive({
   name: ''
 })
 const state = reactive({
-  waterfallKey: Math.random()
+  waterfallKey: Math.random(),
+  pixivMainId: computed(() => $route.params.id)
 })
 const fetchPixiv: Type.RequsetFn = async (tpage, size) => {
   const data = await getComicImglist({
@@ -77,13 +98,20 @@ const onSearch = () => {
   }
   resetWaterfall()
 }
-const imgPreview = (
-  data: GetComicImglistReturn,
-  item: GetComicImglistReturn[0]
-) => {
-  ImagePreview({
-    images: data.map((item) => item.orgurl),
-    current: item.orgurl
+const imgPreview = (e: Event, item: GetComicImglistReturn[0]) => {
+  const el = e.target as HTMLElement
+  const rect = el.getBoundingClientRect()
+
+  toPixivMain(item.id, {
+    detail: item,
+    rect: {
+      width: rect.width | 0,
+      height: rect.height | 0,
+      x: rect.x | 0,
+      y: rect.y | 0,
+      path: item.preurl,
+      radius: getComputedStyle(el).borderRadius
+    }
   })
 }
 </script>
@@ -92,11 +120,9 @@ const imgPreview = (
   position: relative;
   width: 100%;
   height: 100%;
-  // border-top-left-radius: 30px;
-  overflow-y: auto;
-  padding: 26px;
+  padding: 26px 0 0 26px;
   box-sizing: border-box;
-  // background: var(--box-bg-color);
+  overflow: hidden;
   .pixiv {
     &-header {
       position: sticky;
@@ -104,6 +130,14 @@ const imgPreview = (
       margin-bottom: 40px;
       padding: 0 12px;
       box-sizing: border-box;
+    }
+    &-content {
+      width: 100%;
+      height: 100%;
+      padding-right: 20px;
+      box-sizing: border-box;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
     &-img {
       width: 100%;
