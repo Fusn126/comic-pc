@@ -6,8 +6,7 @@
 
 <script lang="ts" setup>
 import { GetComicImglistReturn } from '@/api'
-import { onMounted } from 'vue'
-const props = withDefaults(
+withDefaults(
   defineProps<{
     detail: GetComicImglistReturn[0] | null
   }>(),
@@ -15,14 +14,14 @@ const props = withDefaults(
     detail: null
   }
 )
-// onMounted(() => {
-//   console.log(props.detail?.id, 'in')
-// })
 </script>
 <style lang="less" scoped>
 .pixiv-content__item {
   width: 100%;
+  height: 100%;
   animation: identifier 0.25s;
+  padding: 12px;
+  box-sizing: border-box;
   @keyframes identifier {
     from {
       opacity: 0;
@@ -35,9 +34,8 @@ const props = withDefaults(
   }
 
   img {
-    padding: 0 8px;
-    box-sizing: border-box;
     width: 100%;
+    height: 100%;
     display: block;
     border-radius: 14px;
     transition: all 0.25s;

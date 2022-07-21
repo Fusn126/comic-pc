@@ -339,7 +339,6 @@ export default defineComponent({
     left: 0;
     top: 0;
     overflow: hidden;
-    background: #def;
     img {
       width: 100%;
     }

@@ -11,6 +11,7 @@
         v-if="state.waterfallKey"
         target=".pixiv-content"
         :column="5"
+        :request-size="50"
         :requset="fetchPixiv"
         :gap="26"
       >
@@ -26,11 +27,9 @@
     </div>
 
     <router-view v-slot="{ Component }">
-      <!-- <transition name="route-transition"> -->
       <keep-alive>
         <component :is="Component" />
       </keep-alive>
-      <!-- </transition> -->
     </router-view>
   </div>
 </template>
@@ -93,11 +92,9 @@ const imgPreview = (e: Event, item: GetComicImglistReturn[0]) => {
 </script>
 <style lang="less" scoped>
 #pixiv {
-  @offset: 26px;
   position: relative;
-  width: calc(100% - @offset);
-  height: calc(100% - @offset);
-  margin: @offset 0 0 @offset;
+  width: 100%;
+  height: 100%;
   box-sizing: border-box;
   overflow: hidden;
 
@@ -105,9 +102,8 @@ const imgPreview = (e: Event, item: GetComicImglistReturn[0]) => {
     &-header {
       position: sticky;
       top: 0;
-      margin-bottom: 40px;
-      padding: 0 12px;
-      box-sizing: border-box;
+      padding-top: 10px;
+      margin-bottom: 20px;
     }
 
     &-content {
