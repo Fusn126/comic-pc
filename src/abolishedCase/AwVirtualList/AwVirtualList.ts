@@ -67,7 +67,6 @@ function linkChild({
   }
 }
 
-// todo 简易重写
 export default defineComponent({
   name: 'AwVirtualList',
   props: {
