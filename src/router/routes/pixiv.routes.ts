@@ -7,8 +7,8 @@ export default {
   name: 'Pixiv',
   component: Pixiv,
   meta: {
-    title: WEB_NAME + '-Pixiv'
-    // elName: '#pixiv'
+    title: WEB_NAME + '-Pixiv',
+    elName: '.pixiv-content'
   },
   children: [
     {
