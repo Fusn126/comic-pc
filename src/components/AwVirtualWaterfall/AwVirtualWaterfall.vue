@@ -14,12 +14,14 @@
 </template>
 
 <script lang="ts" setup>
-import { throttle } from '@/utils/adLoadsh'
+import { debounce, throttle } from '@/utils/adLoadsh'
+import { useEventListener } from '@/utils/vant/useEventListener'
 import {
   computed,
   CSSProperties,
   nextTick,
   onMounted,
+  onUnmounted,
   reactive,
   ref
 } from 'vue'
@@ -37,8 +39,8 @@ const props = withDefaults(
     column?: number
     /** 每列最小数量 */
     columnItemCount?: number
-    /** 列和列元素的间隙 */
-    gap?: number
+    /** 请求每页大小 */
+    requestSize?: number
   }>(),
   {
     target: '',
@@ -47,10 +49,10 @@ const props = withDefaults(
         total: 0,
         list: []
       }),
-    offsetY: 300,
+    offsetY: 200,
     column: 3,
     columnItemCount: 6,
-    gap: 16
+    requestSize: 0
   }
 )
 const selfEl = ref<HTMLElement>()
@@ -60,37 +62,18 @@ const reList = reactive({
   tpage: 1,
   total: 0,
   hasMore: true,
-  data: [] as Type.DataItem[],
-  get map() {
-    return this.data.reduce((totol, item) => {
-      totol.set(item.id, item)
-      return totol
-    }, new Map<string | number, Type.DataItem>())
-  }
+  data: [] as Type.DataItem[]
 })
-const awItem = computed(() =>
-  reList.data.reduce((totol, item) => {
-    const width = (scroll.width / props.column) | 0
-    totol.set(item.id, {
-      width,
-      height: ((width / item.w) * item.h) | 0
-    })
-    return totol
-  }, new Map<Type.DataItem['id'], Type.AwItemRect>())
-)
+/** 瀑布流队列集 */
 const columns = reactive({
+  /** 队列 */
   queue: Array(props.column)
     .fill(0)
     .map<Type.ColumnsQueue>(() => ({
       list: [],
-      get height() {
-        // todo 莫名其妙的类型问题
-        return this.list.reduce((totol, { item }: { item: Type.DataItem }) => {
-          const hei = awItem.value.get(item.id)?.height || 0
-          return totol + hei
-        }, 0)
-      }
+      height: 0
     })),
+  /** 已用源数据长度，和queue的所有list长度相加一样 */
   usedDataLen: 0,
   get heights() {
     return columns.queue.map((item) => item.height)
@@ -102,69 +85,47 @@ const columns = reactive({
     return Math.min(...this.heights)
   }
 })
+/** 实际滚动容器信息 */
 const scroll = reactive({
   width: 0,
   height: 0,
-  start: 0,
+  /** 上偏移，用于处理非此组件根节点为滚动节点时，此组件的实际渲染位置偏移 */
   offsetTop: 0,
+  start: 0,
   get end() {
     return this.start + this.height
   }
 })
 
-const requestSize = computed(() => props.column * props.columnItemCount)
-const hasMoreData = computed(() => columns.usedDataLen < reList.data.length)
-const queueData = computed(() =>
-  columns.queue
-    .map((q, i) => {
-      let beforeOffsetY = 0
-      let beforeHei = 0
-      return q.list.map((item, index) => {
-        const hei = awItem.value.get(item.item?.id)?.height || 0
-        if (index === 1) {
-          beforeHei = hei
-          beforeOffsetY =
-            awItem.value.get(item.before?.item?.id || -1)?.height || 0
-        } else if (index !== 0) {
-          beforeOffsetY += beforeHei
-          beforeHei = hei
-        }
-        return {
-          ...item,
-          y: beforeOffsetY,
-          h: hei,
-          style: {
-            width: `${100 / props.column}%`,
-            transform: `translate3d(${i * 100}%,${beforeOffsetY}px,0)`
-          } as CSSProperties
-        }
-      })
+/** 子项高宽集 */
+const awItem = computed(() =>
+  reList.data.reduce((totol, item) => {
+    const width = (scroll.width / props.column) | 0
+    totol.set(item.id, {
+      width,
+      height: ((width / item.w) * item.h) | 0
     })
-    .flat(2)
+    return totol
+  }, new Map<Type.DataItem['id'], Type.AwItemRect>())
 )
-// const queueDataMap = computed(() =>
-//   queueData.value.reduce(
-//     (totol, item) => {
-//       totol.set(
-//         {
-//           h: item.h,
-//           y: item.y
-//         },
-//         item
-//       )
-//       return totol
-//     },
-//     new Map<
-//       {
-//         h: number
-//         y: number
-//       },
-//       typeof queueData.value[0]
-//     >()
-//   )
-// )
+/** 实际请求页大小 */
+const requestSize = computed(
+  () => props.requestSize || props.column * props.columnItemCount
+)
+/** 子项rect */
+// const itemRect = computed(() => ({
+//   width: (scroll.width / props.column) | 0
+// }))
+const hasMoreData = computed(() => columns.usedDataLen < reList.data.length)
+const columnsQueueList = computed(() =>
+  columns.queue.reduce<Type.ColumnsQueue['list']>((totol, item) => {
+    totol.push(...item.list)
+    return totol
+  }, [])
+)
+/** 实际视图渲染使用的data */
 const renderedData = computed(() =>
-  queueData.value.filter(
+  columnsQueueList.value.filter(
     (item) => item.y + item.h > scroll.start && item.y < scroll.end
   )
 )
@@ -174,7 +135,7 @@ const contentStyle = computed<CSSProperties>(() => {
   }
 })
 
-const { onIsBindChanged, loadMore, getTarget } = (() => {
+const { onIsBindChanged, getTarget } = (() => {
   const mainScroll = throttle(async (e: Event) => {
     let { scrollTop, clientHeight } = e.target as HTMLElement
     scrollTop -= scroll.offsetTop
@@ -182,24 +143,11 @@ const { onIsBindChanged, loadMore, getTarget } = (() => {
     if (clientHeight + scrollTop + props.offsetY > columns.minHeight) {
       if (!hasMoreData.value) {
         // console.log('request')
-        await loadMore()
+        await loadMoreData()
       }
-      // console.log('add')
-      addToQueue(5)
+      addToQueue((props.column / 2) | 0)
     }
   }, 100)
-  const loadMore = async () => {
-    if (reList.isPending) return
-    reList.isPending = true
-    const { list, total } = await props.requset(reList.tpage, requestSize.value)
-    if (list.length < requestSize.value) {
-      reList.hasMore = false
-    }
-    reList.tpage++
-    reList.data.push(...list.map((item) => Object.freeze(item)))
-    reList.total = total
-    reList.isPending = false
-  }
   const getTarget = (): HTMLElement | null => {
     const { target } = props
     if (!target) {
@@ -224,27 +172,76 @@ const { onIsBindChanged, loadMore, getTarget } = (() => {
   }
   return {
     onIsBindChanged,
-    loadMore,
     getTarget
   }
 })()
 
+const loadMoreData = async () => {
+  if (reList.isPending) return
+  reList.isPending = true
+  const { list, total } = await props.requset(reList.tpage, requestSize.value)
+  if (list.length < requestSize.value) {
+    reList.hasMore = false
+  }
+  reList.tpage++
+  reList.data.push(...list.map((item) => Object.freeze(item)))
+  reList.total = total
+  reList.isPending = false
+}
 const initRect = () => {
   const rect = getTarget()?.getBoundingClientRect()
   if (!rect) return
   scroll.width = selfEl.value!.clientWidth
   scroll.height = rect.height
   scroll.offsetTop = selfEl.value!.offsetTop
+  scroll.start = (getTarget()?.scrollTop || 0) - scroll.offsetTop
 }
+/**
+ * 生成队列子项
+ * @param current 当前数据源
+ * @param before 上一个子项
+ * @param index 当前列
+ */
+const generateQueueListItem = (
+  item: Type.DataItem,
+  before: Type.ColumnsQueue['list'][0] | null,
+  index: number
+) => {
+  const rect = awItem.value.get(item.id)
+  const wid = rect?.width || 0
+  const hei = rect?.height || 0
+  let y = 0
+  if (before) {
+    y = before.h + before.y
+  }
+  return {
+    item,
+    h: hei,
+    y,
+    style: {
+      width: `${wid}px`,
+      height: `${hei}px`,
+      transform: `translate3d(${index * 100}%,${y}px,0)`
+    }
+  }
+}
+/**
+ * 将数据放入渲染队列
+ * @param index 第几列
+ * @param item 源数据
+ */
 const pushToQueue = (index: number, item: Type.DataItem) => {
   const q = columns.queue[index]
-  const listLen = q.list.length
+  const before = q.list[q.list.length - 1] || null
+  const result = generateQueueListItem(item, before, index)
+  q.height += result.h
+  q.list.push(result)
   columns.usedDataLen++
-  q.list.push({
-    item,
-    before: q.list[listLen - 1] || null
-  })
 }
+/**
+ * 取现有数据放入最矮的队列
+ * @param size 执行次数，每次放一个数据
+ */
 const addToQueue = (size = 1) => {
   for (const _ of Array(size)) {
     if (!hasMoreData.value) {
@@ -256,12 +253,43 @@ const addToQueue = (size = 1) => {
     pushToQueue(minHeiQueueIndex, reList.data[columns.usedDataLen])
   }
 }
+/** 重绘 */
+const repaint = () => {
+  columns.queue = columns.queue.map((q, index) => {
+    let height = 0
+    const list = q.list.reduce<Type.ColumnsQueue['list']>(
+      (totol, { item }, i) => {
+        const before = totol[i - 1] || null
+        const result = generateQueueListItem(item, before, index)
+        height += result.h
+        totol.push(result)
+        return totol
+      },
+      []
+    )
+    return {
+      height,
+      list
+    }
+  })
+}
 
+useEventListener(
+  'resize',
+  debounce(async () => {
+    initRect()
+    repaint()
+  }, 300)
+)
 onMounted(async () => {
   initRect()
   onIsBindChanged(true)
-  await loadMore()
+  await loadMoreData()
   addToQueue(requestSize.value)
+})
+
+onUnmounted(() => {
+  onIsBindChanged(false)
 })
 
 defineExpose({

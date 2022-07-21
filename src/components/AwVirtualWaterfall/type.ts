@@ -1,24 +1,41 @@
+import { CSSProperties } from 'vue'
+
 export type RequsetFn = (
+  /** 第几页 */
   tpage: number,
+  /** 每页大小 */
   size: number
-) => Promise<{ list: any[]; total: number }>
+) => Promise<{
+  /** 返回列表 */
+  list: DataItem[]
+  /** 全列表总数 */
+  total: number
+}>
 
 export interface AwItemRect {
   width: number
   height: number
 }
 
-export interface DataItem {
+/** 请求返回数据的具体项 */
+export type DataItem = {
   w: number
   h: number
   id: number | string
-  [props: string]: any
-}
+} & any
 
 export interface ColumnsQueue {
+  /** 当前列内item */
   list: {
+    /** 数据源 */
     item: DataItem
-    before: ColumnsQueue['list'][0] | null
+    /** 渲染上偏移 */
+    y: number
+    /** 自身实际渲染高度 */
+    h: number
+    /*** 样式集 */
+    style: CSSProperties
   }[]
-  readonly height: number
+  /** 当前列高度 */
+  height: number
 }
