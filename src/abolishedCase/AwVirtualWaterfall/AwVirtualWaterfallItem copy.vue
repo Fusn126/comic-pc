@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div ref="selfEl" class="aw-virtual-waterfall__item">
     <slot />
   </div>
@@ -7,7 +7,7 @@
 <script lang="ts" setup>
 import { useResizeListener } from '@/hooks/utils'
 import { ref } from 'vue'
-import * as Type from './type'
+import * as Type from '../../components/AwVirtualWaterfall/type'
 
 const emit = defineEmits<{
   (e: 'resize', item: Type.AwItemRect): void
@@ -30,4 +30,4 @@ useResizeListener(selfEl, () => {
   left: 0;
   top: 0;
 }
-</style>
+</style> -->

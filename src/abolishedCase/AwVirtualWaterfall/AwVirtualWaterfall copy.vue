@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div ref="selfEl" class="aw-virtual-waterfall">
     <div class="vw-content" :style="contentStyle">
       <keep-alive>
@@ -25,8 +25,8 @@ import {
   ref,
   watch
 } from 'vue'
-import * as Type from './type'
-import AwVirtualWaterfallItem from './AwVirtualWaterfallItem.vue'
+import * as Type from '../../components/AwVirtualWaterfall/type'
+import AwVirtualWaterfallItem from '../../components/AwVirtualWaterfall/AwVirtualWaterfallItem.vue'
 import { deepCopy } from 'adicw-utils'
 import { throttle } from '@/utils/adLoadsh'
 
@@ -238,4 +238,4 @@ defineExpose({
     }
   }
 }
-</style>
+</style> -->
