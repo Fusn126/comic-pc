@@ -6,14 +6,14 @@
         type="text"
         :value="modelValue"
         placeholder="请输入搜索关键字..."
-        @keyup.enter="emit('searchEnter')"
+        @keyup.enter="emit('search')"
         @input="updateValue"
         @focus="state.using = true"
       />
       <Icon
         class="search-icon"
         :name="modelValue !== '' ? 'delete1' : 'iconsearch'"
-        @click="emit('searchClick')"
+        @click="clearValue"
       />
       <transition
         enter-active-class="animate__fadeInDown"
@@ -48,9 +48,9 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
-import vClickOutside from '@/directs/clickOutside.direct'
 import ListVueTransition from '@/components/Transition/ListVueTransition.vue'
+import vClickOutside from '@/directs/clickOutside.direct'
+import { reactive, ref } from 'vue'
 
 interface History {
   date: number
@@ -69,8 +69,8 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
-  (e: 'searchEnter'): void
-  (e: 'searchClick'): void
+  (e: 'search'): void
+  (e: 'clear'): void
   (e: 'deleteHistory', value: string): void
   (e: 'clearHistory'): void
 }>()
@@ -91,8 +91,16 @@ const updateValue = (e: Event) => {
 const changeHistory = (v: string) => {
   if (v === props.modelValue) return
   emit('update:modelValue', v)
-  emit('searchEnter')
+  emit('search')
   unUsing()
+}
+const clearValue = () => {
+  if (props.modelValue !== '') {
+    emit('update:modelValue', '')
+    emit('clear')
+  } else {
+    emit('search')
+  }
 }
 </script>
 <style lang="less" scoped>

@@ -3,8 +3,8 @@
     <SearchHeader
       v-model="filter.name"
       :history="searchHistoryList"
-      @searchEnter="searchByName()"
-      @searchClick="!hasSearchKey ? searchByName() : resetName()"
+      @search="searchByName"
+      @clear="resetName"
       @deleteHistory="deleteHistory"
       @clearHistory="clearHistory"
     >
