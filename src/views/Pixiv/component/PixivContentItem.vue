@@ -40,6 +40,7 @@ withDefaults(
     border-radius: 14px;
     transition: all 0.25s;
     cursor: pointer;
+    background: #def;
   }
 
   &:hover {
