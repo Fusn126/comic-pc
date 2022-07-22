@@ -17,7 +17,9 @@
       >
         <template #item="{ item }">
           <PixivContentItem
-            :style="{ opacity: state.pixivMainId === item.id ? 0 : 1 }"
+            :style="{
+              opacity: state.pixivMainId === item.id ? 0 : 1
+            }"
             :detail="item"
             @click="(e) => imgPreview(e, item)"
           />
@@ -35,22 +37,25 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, reactive } from 'vue'
-import { Type, AwVirtualWaterfall } from '@/components/AwVirtualWaterfall'
-import SearchHeader from '@/components/Form/SearchHeader.vue'
 import { getComicImglist, GetComicImglistReturn } from '@/api'
+import { AwVirtualWaterfall, Type } from '@/components/AwVirtualWaterfall'
+import SearchHeader from '@/components/Form/SearchHeader.vue'
 import { toPixivMain } from '@/hooks/router'
+import { nextTick, reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import PixivContentItem from './component/PixivContentItem.vue'
 
 const $route = useRoute()
+
 const pixivFilter = reactive({
   name: ''
 })
 const state = reactive({
   waterfallKey: Math.random(),
-  pixivMainId: computed(() => $route.params.id)
+  pixivMainId: '',
+  childRouteActive: false
 })
+
 const fetchPixiv: Type.RequsetFn = async (tpage, size) => {
   const data = await getComicImglist({
     limit: size,
@@ -89,6 +94,21 @@ const imgPreview = (e: Event, item: GetComicImglistReturn[0]) => {
     }
   })
 }
+
+watch(
+  () => $route.params,
+  (params) => {
+    const id = String(params.id)
+    if (!params.id) {
+      setTimeout(() => {
+        state.pixivMainId = ''
+      }, 625)
+    }
+    if (state.pixivMainId === '') {
+      state.pixivMainId = id
+    }
+  }
+)
 </script>
 <style lang="less" scoped>
 #pixiv {

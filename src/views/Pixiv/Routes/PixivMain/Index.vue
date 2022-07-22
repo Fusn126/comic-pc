@@ -1,54 +1,56 @@
 <template>
-  <div v-if="detail" class="pixiv-main" :style="selfStyle">
-    <div class="pixiv-main__close">
-      <Icon name="delete2" @click="backPage" />
-    </div>
-    <div class="pixiv-main__content" :style="contentStyle">
-      <div class="painter">
-        <div class="painter-avatar">
-          <img :src="detail.orgurl" alt="" />
+  <transition>
+    <div v-if="detail" class="pixiv-main" :style="selfStyle">
+      <div class="pixiv-main__close">
+        <Icon name="delete2" @click="$router.go(-1)" />
+      </div>
+      <div class="pixiv-main__content" :style="contentStyle">
+        <div class="painter">
+          <div class="painter-avatar">
+            <img :src="detail.orgurl" alt="" />
+          </div>
+          <div class="painter-info">
+            <p>
+              <b>{{ detail.title }}</b>
+              <a> · {{ $moment(detail.date).fromNow() }}</a>
+            </p>
+            <ul>
+              <li>#Vinneart</li>
+              <li>#Artworks</li>
+            </ul>
+          </div>
         </div>
-        <div class="painter-info">
-          <p>
-            <b>{{ detail.title }}</b>
-            <a> · {{ $moment(detail.date).fromNow() }}</a>
-          </p>
+        <div class="plate">
+          <img
+            ref="plateImgEl"
+            :src="detail.orgurl"
+            alt=""
+            @load="onPlateImgLoad"
+          />
           <ul>
-            <li>#Vinneart</li>
-            <li>#Artworks</li>
+            <li v-for="(item, index) in detail.tags.split(',')" :key="index">
+              <a>#{{ item }}</a>
+            </li>
           </ul>
         </div>
-      </div>
-      <div class="plate">
-        <img
-          ref="plateImgEl"
-          :src="detail.orgurl"
-          alt=""
-          @load="onPlateImgLoad"
-        />
-        <ul>
-          <li v-for="(item, index) in detail.tags.split(',')" :key="index">
-            <a>#{{ item }}</a>
-          </li>
-        </ul>
-      </div>
-      <div class="else">
-        <div class="else-item">
-          <Icon name="icon_love" />
-          <span> {{ detail.likeTotal }}</span>
-        </div>
-        <div class="else-item">
-          <Icon name="iccosplay" />
-          <span>
-            {{ detail.commentTotal }}
-          </span>
+        <div class="else">
+          <div class="else-item">
+            <Icon name="icon_love" />
+            <span> {{ detail.likeTotal }}</span>
+          </div>
+          <div class="else-item">
+            <Icon name="iccosplay" />
+            <span>
+              {{ detail.commentTotal }}
+            </span>
+          </div>
         </div>
       </div>
+      <div ref="fakeEl" :style="fakeStyle" class="pixiv-main__fake">
+        <img :src="enterRect?.path" alt="" @load="onFakeImgLoad" />
+      </div>
     </div>
-    <div ref="fakeEl" :style="fakeStyle" class="pixiv-main__fake">
-      <img :src="enterRect?.path" alt="" @load="onFakeImgLoad" />
-    </div>
-  </div>
+  </transition>
 </template>
 
 <script lang="ts">
@@ -64,7 +66,7 @@ import {
   ref,
   unref
 } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 
 function animateModule() {
   const $route = useRoute()
@@ -73,7 +75,8 @@ function animateModule() {
 
   const fake = reactive({
     active: true,
-    visible: false
+    visible: false,
+    duration: 625
   })
   const plateImgPending = ref(true)
 
@@ -82,6 +85,7 @@ function animateModule() {
   )
   const selfStyle = computed<CSSProperties>(() => {
     return {
+      animationDuration: `${fake.duration / 1000}s`
       // 'overflow-y': fake.active ? 'hidden' : 'auto'
     }
   })
@@ -109,7 +113,12 @@ function animateModule() {
     }
   })
 
-  const fakeAnimate = (callback: () => void, reverse = false) => {
+  const fakeAnimate = (
+    reverse = false,
+    callback = () => {
+      //
+    }
+  ) => {
     const fakeRect = unref(enterRect)
     const realRect = plateImgEl.value?.getBoundingClientRect()
     if (!fakeRect || !realRect || !fakeEl.value) return
@@ -130,7 +139,7 @@ function animateModule() {
       }
     ]
     fakeEl.value.animate(!reverse ? keyframes : keyframes.reverse(), {
-      duration: 625,
+      duration: fake.duration,
       fill: 'forwards',
       easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
     }).onfinish = callback
@@ -144,7 +153,7 @@ function animateModule() {
   }
 
   onActivated(() => {
-    fakeAnimate(() => {
+    fakeAnimate(false, () => {
       fake.visible = false
       fake.active = false
     })
@@ -153,6 +162,10 @@ function animateModule() {
     fake.active = true
     fake.visible = true
     plateImgPending.value = true
+  })
+  onBeforeRouteLeave(async () => {
+    fakeAnimate(true)
+    return true
   })
 
   return {
@@ -174,21 +187,18 @@ export default defineComponent({
     id: {
       type: [Number, String],
       default: -1
+    },
+    alive: {
+      type: Boolean,
+      default: true
     }
   },
   setup() {
     const $route = useRoute()
     const $router = useRouter()
-    const { fakeAnimate, ...animateModuleArgs } = animateModule()
-
     const detail = computed<PixivMainParams['detail'] | null>(() =>
       jsonParse($route.params.detail as string, null)
     )
-
-    const backPage = () =>
-      fakeAnimate(() => {
-        $router.go(-1)
-      }, true)
 
     onActivated(() => {
       if (!detail.value) {
@@ -200,8 +210,7 @@ export default defineComponent({
 
     return {
       detail,
-      backPage,
-      ...animateModuleArgs
+      ...animateModule()
     }
   }
 })
@@ -286,8 +295,8 @@ export default defineComponent({
             display: flex;
             align-items: center;
             padding: 0 12px;
-            height: 26px;
-            background: #000;
+            .font-format(26px);
+            background: var(--bg-color);
             border-radius: 8px;
           }
         }
@@ -310,9 +319,13 @@ export default defineComponent({
         flex-wrap: wrap;
         padding: 16px;
         padding-bottom: 10px;
-        font-size: 18px;
+        font-size: 16px;
         gap: 4px 12px;
         li {
+          a {
+            display: block;
+            .font-format(21px);
+          }
         }
       }
     }
