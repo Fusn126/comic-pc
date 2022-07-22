@@ -35,7 +35,7 @@ import ImagePreview from '@/components/AwImagePreview/ImagePreview.vue'
 
 const props = withDefaults(
   defineProps<{
-    imgs: Api.GetComicImglistReturn
+    imgs: Api.ComicSearchItem[]
   }>(),
   {
     imgs: () => []
@@ -90,7 +90,7 @@ const scroll = () => {
     .slice(0, activeIndex.value)
     .reduce((totol, item) => totol + item.width + 20, 0)
 }
-const imgPreview = (e: Api.GetComicImglistReturn[0]) => {
+const imgPreview = (e: Api.ComicSearchItem) => {
   preview.visible = true
   preview.current = e.orgurl
 }

@@ -37,10 +37,11 @@
 </template>
 
 <script lang="ts" setup>
-import { getComicImglist, GetComicImglistReturn } from '@/api'
+import { getComicImglist, ComicSearchItem } from '@/api'
 import { AwVirtualWaterfall, Type } from '@/components/AwVirtualWaterfall'
 import SearchHeader from '@/components/Form/SearchHeader.vue'
 import { toPixivMain } from '@/hooks/router'
+import { ElMessage } from 'element-plus'
 import { nextTick, reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import PixivContentItem from './component/PixivContentItem.vue'
@@ -57,14 +58,20 @@ const state = reactive({
 })
 
 const fetchPixiv: Type.RequsetFn = async (tpage, size) => {
-  const data = await getComicImglist({
+  const { list, total } = await getComicImglist({
     limit: size,
     offset: --tpage * size,
     name: pixivFilter.name
   })
+  if (list.length === 0 && tpage === 0) {
+    ElMessage({
+      message: '什么都没有找到~',
+      type: 'warning'
+    })
+  }
   return {
-    list: data,
-    total: 1000
+    list,
+    total
   }
 }
 const resetWaterfall = async () => {
@@ -78,7 +85,7 @@ const onSearch = () => {
   }
   resetWaterfall()
 }
-const imgPreview = (e: Event, item: GetComicImglistReturn[0]) => {
+const imgPreview = (e: Event, item: ComicSearchItem) => {
   const el = e.target as HTMLElement
   const rect = el.getBoundingClientRect()
 

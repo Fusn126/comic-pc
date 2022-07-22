@@ -1,5 +1,5 @@
 import router from '../router/index'
-import { GetComicImglistReturn } from '@/api'
+import { ComicSearchItem } from '@/api'
 
 /**
  * 前往动漫详情
@@ -28,7 +28,7 @@ export function toComicMain(
 
 export interface PixivMainParams {
   /** 图片信息 */
-  detail: GetComicImglistReturn[0]
+  detail: ComicSearchItem
   /** 进入图片rect */
   rect: {
     width: number

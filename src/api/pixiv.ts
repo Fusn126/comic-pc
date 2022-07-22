@@ -34,21 +34,27 @@ export async function getComicImglist({
     const { data } = await dfGetax<ApiReturns.VilipixIllust>(
       `https://www.vilipix.com/api/v1/picture/public?limit=${limit}&tags=${realName}&sort=${sort}&offset=${offset}`
     )
-    return getVal(() => data.data.rows, []).map((item) => ({
-      date: item.created_at,
-      title: item.title,
-      orgurl: item.original_url,
-      preurl: item.regular_url,
-      id: item.picture_id,
-      desc: '',
-      w: item.width,
-      h: item.height,
-      commentTotal: item.comment_total,
-      likeTotal: item.like_total,
-      tags: item.tags
-    }))
+    return {
+      list: getVal(() => data.data.rows, []).map((item) => ({
+        date: item.created_at,
+        title: item.title,
+        orgurl: item.original_url,
+        preurl: item.regular_url,
+        id: item.picture_id,
+        desc: '',
+        w: item.width,
+        h: item.height,
+        commentTotal: item.comment_total,
+        likeTotal: item.like_total,
+        tags: item.tags
+      })),
+      total: data?.data?.count || 0
+    }
   } catch (e) {
-    return []
+    return {
+      list: [],
+      total: 0
+    }
   }
 }
 

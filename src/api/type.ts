@@ -138,10 +138,7 @@ export type GetComicFilterConfig = {
   }[]
 }[]
 
-/**
- * 动漫的相关图片列表-来源pixiv
- */
-export type GetComicImglistReturn = {
+export interface ComicSearchItem {
   /** id */
   id: string
   /** 名称 */
@@ -159,4 +156,12 @@ export type GetComicImglistReturn = {
   commentTotal: number
   likeTotal: number
   tags: string
-}[]
+}
+
+/**
+ * 动漫的相关图片列表-来源pixiv
+ */
+export type GetComicImglistReturn = {
+  list: ComicSearchItem[]
+  total: number
+}

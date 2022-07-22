@@ -180,8 +180,9 @@ const loadMoreData = async () => {
   if (reList.isPending) return
   reList.isPending = true
   const { list, total } = await props.requset(reList.tpage, requestSize.value)
-  if (list.length < requestSize.value) {
+  if (list.length === 0 || list.length < requestSize.value) {
     reList.hasMore = false
+    return
   }
   reList.tpage++
   reList.data.push(...list.map((item) => Object.freeze(item)))

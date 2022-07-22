@@ -101,7 +101,7 @@ function comicInfoModule(comicId: Ref<ComicId>, init: () => void) {
   })
   /** 动漫地址集 */
   const comicUrls = ref<Api.GetVideoUrlReturn>([])
-  const comicImglist = ref<Api.GetComicImglistReturn>([])
+  const comicImglist = ref<Api.ComicSearchItem[]>([])
 
   const comicInit = async (comicId: ComicId) => {
     isPending.value = true
@@ -121,7 +121,7 @@ function comicInfoModule(comicId: Ref<ComicId>, init: () => void) {
 
       Api.getComicImglist({
         name: comic.title
-      }).then((res) => (comicImglist.value = res))
+      }).then(({ list }) => (comicImglist.value = list))
 
       document.title = comic.title
       isPending.value = false

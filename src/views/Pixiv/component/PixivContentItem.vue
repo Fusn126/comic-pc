@@ -1,19 +1,21 @@
 <template>
-  <div v-if="detail" class="pixiv-content__item">
-    <img :src="detail.preurl" />
+  <div v-show="loaded" class="pixiv-content__item">
+    <img :src="detail?.preurl" @load="loaded = true" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { GetComicImglistReturn } from '@/api'
+import { ComicSearchItem } from '@/api'
+import { ref } from 'vue'
 withDefaults(
   defineProps<{
-    detail: GetComicImglistReturn[0] | null
+    detail: ComicSearchItem | null
   }>(),
   {
     detail: null
   }
 )
+const loaded = ref(false)
 </script>
 <style lang="less" scoped>
 .pixiv-content__item {
