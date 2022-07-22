@@ -164,7 +164,7 @@ export function useDebouncedRef<T>(value: T, delay = 200) {
         track()
         return value
       },
-      set(newValue) {
+      set(newValue: T) {
         timeout && clearTimeout(timeout)
         timeout = setTimeout(() => {
           value = newValue
