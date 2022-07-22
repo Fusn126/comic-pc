@@ -12,7 +12,8 @@ import {
   provide,
   InjectionKey,
   inject,
-  getCurrentInstance
+  getCurrentInstance,
+  customRef
 } from 'vue'
 import { domObserver } from '@/utils/dom'
 import { useEventListener } from '@/utils/vant/useEventListener'
@@ -153,4 +154,23 @@ export function useExpose<T = Record<string, any>>(apis: T) {
   if (instance) {
     Object.assign(instance.proxy, apis)
   }
+}
+
+export function useDebouncedRef<T>(value: T, delay = 200) {
+  let timeout: NodeJS.Timeout | null = null
+  return customRef((track, trigger) => {
+    return {
+      get() {
+        track()
+        return value
+      },
+      set(newValue) {
+        timeout && clearTimeout(timeout)
+        timeout = setTimeout(() => {
+          value = newValue
+          trigger()
+        }, delay)
+      }
+    }
+  })
 }
