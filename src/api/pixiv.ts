@@ -3,6 +3,11 @@ import * as FnReturns from './type'
 import * as ApiReturns from './api.type'
 import { getVal } from 'adicw-utils'
 
+const BaseUrl =
+  import.meta.env.MODE === 'development'
+    ? 'http://localhost:3001/'
+    : 'http://pixivapi.adicw.cn/'
+
 /**
  * 获取动漫的相关图片列表-来源pixiv
  * @param param
@@ -69,8 +74,7 @@ export async function getComicImgMain(
 ): Promise<FnReturns.GetComicImgMain | null> {
   try {
     const { data } = await dfGetax<ApiReturns.VilipixIllust>(
-      `http://localhost:3001/illust/${id}`
-      // `http://pixivapi.adicw.cn/illust/${id}`
+      `${BaseUrl}illust/${id}`
     )
     return {
       orgImgs: data.imgs,
