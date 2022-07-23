@@ -1,11 +1,11 @@
 <template>
-  <div v-moveable class="live2d">
+  <div v-moveable class="live2d" :style="selfStyle">
     <canvas ref="cvs" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from 'vue'
+import { computed, CSSProperties, defineComponent, reactive, ref } from 'vue'
 import { LIVE2D_CDNS } from './static'
 import Moveable from '@/directs/moveable.direct'
 import { wait } from 'adicw-utils'
@@ -34,9 +34,13 @@ export default defineComponent({
     draggable: {
       type: Boolean,
       default: true
+    },
+    visible: {
+      type: Boolean,
+      default: true
     }
   },
-  setup() {
+  setup(props) {
     const cvs = ref<HTMLCanvasElement>()
     const live2d = reactive<{
       instance: any
@@ -45,6 +49,9 @@ export default defineComponent({
       instance: null,
       version: 2
     })
+    const selfStyle = computed<CSSProperties>(() => ({
+      zIndex: !props.visible ? -1 : 4444
+    }))
 
     /** 依赖加载 */
     const loadCDN = async () => {
@@ -119,7 +126,8 @@ export default defineComponent({
     return {
       initLive2d,
       motion,
-      cvs
+      cvs,
+      selfStyle
     }
   }
 })
@@ -127,7 +135,6 @@ export default defineComponent({
 <style lang="less" scoped>
 .live2d {
   position: fixed;
-  z-index: 4444;
   left: 0;
   bottom: 0;
   user-select: none;

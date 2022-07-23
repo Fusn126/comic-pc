@@ -16,6 +16,7 @@
           @next="nextAnthology"
           @ended="nextAnthology"
           @error="onVideoError"
+          @fullscreen="onFullscreen"
         />
       </div>
       <div class="comic-main__box">
@@ -77,6 +78,7 @@ import * as Type from './types/index.type'
 import { GetComicMainReturn } from '@apis/index'
 import { usePlayCache } from '@/hooks/user'
 import { useSystemConfigStore } from '@/stores/systemConfig.store'
+import { useKoharu } from '@/stores/koharu.store'
 
 /**
  * 动漫信息模块
@@ -161,6 +163,7 @@ export default defineComponent({
     const route = useRoute()
     const { playProgressCache, playHistoryCache } = usePlayCache()
     const systemConfigStore = useSystemConfigStore()
+    const koharu = useKoharu()
 
     const routeParam = computed(() => ({
       episode: Number(route.query.episode) || -1,
@@ -289,6 +292,9 @@ export default defineComponent({
       anthology.current = ''
       anthology.currentItem = null
     }
+    const onFullscreen = (full: boolean) => {
+      koharu.toggle(!full)
+    }
     /**
      * 初始化-默认
      */
@@ -405,10 +411,11 @@ export default defineComponent({
       anthology,
       awVideoComp,
       initPlayerCurrentTime,
+      systemConfigStore,
+      onFullscreen,
       changeAnthology,
       onVideoError,
-      nextAnthology,
-      systemConfigStore
+      nextAnthology
     }
   }
 })

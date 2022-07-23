@@ -14,23 +14,28 @@
       <AppRouter />
     </main>
 
-    <Live2d ref="live2dComp" @click="live2dAction" />
+    <Live2d
+      ref="live2dComp"
+      v-model:visible="koharu.visible"
+      @click="live2dAction"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue'
 import '@/assets/icon/iconfont.css'
 import '@/assets/icon/iconfont.js'
+import { defineComponent, onMounted, ref } from 'vue'
 
-import AppAsideBar from '@/layout/AppAsideBar.vue'
-import AppTabBar from '@/layout/AppTabBar.vue'
-import AppRouter from '@/layout/AppRouter.vue'
 import Live2d from '@/components/Live2d/Live2d.vue'
+import AppAsideBar from '@/layout/AppAsideBar.vue'
+import AppRouter from '@/layout/AppRouter.vue'
+import AppTabBar from '@/layout/AppTabBar.vue'
 
-import { useSystemConfigStore } from './stores/systemConfig.store'
 import { WEB_NAME } from './common/static'
 import { useIsDev } from './hooks/utils'
+import { useSystemConfigStore } from './stores/systemConfig.store'
+import { useKoharu } from '@/stores/koharu.store'
 
 function provideModule() {
   const { isDev } = useIsDev()
@@ -46,6 +51,8 @@ function asideModule() {
 }
 function live2dModule() {
   const live2dComp = ref<InstanceType<typeof Live2d>>()
+  const koharu = useKoharu()
+
   const live2dAction = () => {
     live2dComp.value?.motion('else')
   }
@@ -61,7 +68,8 @@ function live2dModule() {
   })
   return {
     live2dComp,
-    live2dAction
+    live2dAction,
+    koharu
   }
 }
 
