@@ -156,12 +156,22 @@ export interface ComicSearchItem {
   commentTotal: number
   likeTotal: number
   tags: string
+  total: number
 }
 
 /**
  * 动漫的相关图片列表-来源pixiv
  */
-export type GetComicImglistReturn = {
+export interface GetComicImglistReturn {
   list: ComicSearchItem[]
   total: number
+}
+
+export interface GetComicImgMain {
+  orgImgs: string[]
+  author: {
+    id: string
+    avatar: string
+    name: string
+  }
 }

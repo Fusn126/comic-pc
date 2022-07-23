@@ -31,7 +31,7 @@ export async function getComicImglist({
         /(第一季|第二季|第四季|第五季|第六季|第七季|BD|无修|剧场版|？)/,
         ''
       )
-    const { data } = await dfGetax<ApiReturns.VilipixIllust>(
+    const { data } = await dfGetax<ApiReturns.VilipixSearch>(
       `https://www.vilipix.com/api/v1/picture/public?limit=${limit}&tags=${realName}&sort=${sort}&offset=${offset}`
     )
     return {
@@ -46,7 +46,8 @@ export async function getComicImglist({
         h: item.height,
         commentTotal: item.comment_total,
         likeTotal: item.like_total,
-        tags: item.tags
+        tags: item.tags,
+        total: item.page_total
       })),
       total: data?.data?.count || 0
     }
@@ -61,16 +62,25 @@ export async function getComicImglist({
 /**
  * 获取动漫图片详情，和getComicImglist关联
  * todo
- * @param param
+ * @param id
  */
-export async function getComicImgmain({ id }: { id: string; userId: string }) {
+export async function getComicImgMain(
+  id: string | number
+): Promise<FnReturns.GetComicImgMain | null> {
   try {
-    const { data } = await dfGetax<ApiReturns.VilipixTranslate>(
-      `https://www.vilipix.com/api/translate/${id}`
+    const { data } = await dfGetax<ApiReturns.VilipixIllust>(
+      `http://localhost:3001/illust/${id}`
+      // `http://pixivapi.adicw.cn/illust/${id}`
     )
-    const info = getVal(() => data.data.source_json, '')
-    console.log(info)
+    return {
+      orgImgs: data.imgs,
+      author: {
+        id: data.authorId,
+        avatar: data.authorAvatar,
+        name: data.authorName
+      }
+    }
   } catch {
-    return ''
+    return null
   }
 }

@@ -189,7 +189,7 @@ export type GetIndex = ApiFormat<{
   }[]
 }>
 
-export interface VilipixIllust {
+export interface VilipixSearch {
   data: {
     /** 结果 */
     rows: {
@@ -217,15 +217,21 @@ export interface VilipixIllust {
       comment_total: number
       /** 喜欢数量 */
       like_total: number
+      /** 图片数量 */
+      page_total: number
     }[]
     /** 结果总数 */
     count: number
   }
 }
 
-export interface VilipixTranslate {
-  data: {
-    /** json */
-    source_json: string
-  }
+export interface VilipixIllust {
+  /** 图片列表 */
+  imgs: string[]
+  /** 作者id */
+  authorId: string
+  /** 作者头像 */
+  authorAvatar: string
+  /** 作者名称 */
+  authorName: string
 }
