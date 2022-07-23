@@ -4,27 +4,49 @@
       <SearchHeader
         v-model="pixivFilter.name"
         class="pixiv-header"
-        @searchEnter="resetWaterfall()"
-        @searchClick="onSearch"
-      />
-      <AwVirtualWaterfall
-        v-if="state.waterfallKey"
-        target=".pixiv-content"
-        :column="5"
-        :request-size="50"
-        :requset="fetchPixiv"
-        :gap="26"
+        @search="onSearch"
+        @clear="onSearch"
       >
-        <template #item="{ item }">
-          <PixivContentItem
-            :style="{
-              opacity: state.pixivMainId === item.id ? 0 : 1
-            }"
-            :detail="item"
-            @click="(e) => imgPreview(e, item)"
-          />
-        </template>
-      </AwVirtualWaterfall>
+        <el-dropdown>
+          <div class="search-sort">
+            {{
+              PIXIV_SEARCH_SORT.find((item) => item.value === pixivFilter.sort)
+                ?.name
+            }}
+            <Icon name="arrow" />
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="{ name, value } in PIXIV_SEARCH_SORT"
+                :key="value"
+                @click="changeSearchSort(value)"
+                >{{ name }}</el-dropdown-item
+              >
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </SearchHeader>
+      <AwSearchLoading :pending="state.searchPending">
+        <AwVirtualWaterfall
+          target=".pixiv-content"
+          :column="5"
+          :request-size="state.requestSize"
+          :requset="fetchPixiv"
+          :gap="26"
+        >
+          <template #item="{ item }">
+            <PixivContentItem
+              :style="{
+                opacity: state.pixivMainId === item.id ? 0 : 1
+              }"
+              :detail="item"
+              @click="(e) => imgPreview(e, item)"
+            />
+          </template>
+        </AwVirtualWaterfall>
+      </AwSearchLoading>
+
       <AdBreakTop target=".pixiv-content" />
     </div>
 
@@ -37,32 +59,39 @@
 </template>
 
 <script lang="ts" setup>
-import { getComicImglist, ComicSearchItem } from '@/api'
+import { ComicSearchItem, getComicImglist } from '@/api'
+import AwSearchLoading from '@/components/AwSearchLoading/AwSearchLoading.vue'
 import { AwVirtualWaterfall, Type } from '@/components/AwVirtualWaterfall'
 import SearchHeader from '@/components/Form/SearchHeader.vue'
 import { toPixivMain } from '@/hooks/router'
 import { ElMessage } from 'element-plus'
-import { nextTick, reactive, watch } from 'vue'
+import { reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import PixivContentItem from './component/PixivContentItem.vue'
+import * as ApiReturns from '@/api/api.type'
+import { PIXIV_SEARCH_SORT } from './static/form'
 
 const $route = useRoute()
 
 const pixivFilter = reactive({
-  name: ''
+  name: '',
+  sort: 'hot' as ApiReturns.VilipixSearchSort
 })
 const state = reactive({
-  waterfallKey: Math.random(),
   pixivMainId: '',
-  childRouteActive: false
+  childRouteActive: false,
+  searchPending: false,
+  requestSize: 50
 })
 
 const fetchPixiv: Type.RequsetFn = async (tpage, size) => {
   const { list, total } = await getComicImglist({
     limit: size,
     offset: --tpage * size,
-    name: pixivFilter.name
+    name: pixivFilter.name,
+    sort: pixivFilter.sort
   })
+  state.searchPending = false
   if (list.length === 0 && tpage === 0) {
     ElMessage({
       message: '什么都没有找到~',
@@ -74,16 +103,13 @@ const fetchPixiv: Type.RequsetFn = async (tpage, size) => {
     total
   }
 }
-const resetWaterfall = async () => {
-  state.waterfallKey = 0
-  await nextTick()
-  state.waterfallKey = Math.random()
-}
 const onSearch = () => {
-  if (pixivFilter.name !== '') {
-    pixivFilter.name = ''
-  }
-  resetWaterfall()
+  state.searchPending = true
+  fetchPixiv(1, state.requestSize)
+}
+const changeSearchSort = (value: ApiReturns.VilipixSearchSort) => {
+  pixivFilter.sort = value
+  onSearch()
 }
 const imgPreview = (e: Event, item: ComicSearchItem) => {
   const el = e.target as HTMLElement
@@ -139,8 +165,21 @@ watch(
       padding-right: 20px;
       box-sizing: border-box;
       overflow-x: hidden;
-      overflow-y: auto;
+      overflow-y: scroll;
+      user-select: none;
     }
+  }
+  .search-sort {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 12px 0 20px;
+    height: 48px;
+    background: var(--box-bg-color);
+    font-size: 16px;
+    border-radius: 12px;
+    color: var(--font-color);
+    cursor: pointer;
   }
 }
 </style>
