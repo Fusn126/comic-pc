@@ -186,25 +186,25 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, Ref, ref, shallowReactive } from 'vue'
 import {
+  checkFullscreen,
   fullscreen,
   pictureInPicture,
-  checkFullscreen,
   sToMs,
   timeToS
 } from 'adicw-utils'
+import { defineComponent, reactive, Ref, ref, shallowReactive } from 'vue'
 
-import AwVideoProgress from './AwVideoProgress.vue'
-import AwVideoMsg, { NotifyItem } from './AwVideoMsg.vue'
-import VideoRender from './VideoRender.vue'
 import AwVideoMask from './AwVideoMask.vue'
+import AwVideoMsg, { NotifyItem } from './AwVideoMsg.vue'
+import AwVideoProgress from './AwVideoProgress.vue'
+import VideoRender from './VideoRender.vue'
 
-import { debounce, throttle } from '@/utils/adLoadsh'
-import { useEventListener } from '@/utils/vant/useEventListener'
-import { getVideoScreenshot } from '@/utils/media'
-import * as Type from './type'
 import ClickOutside from '@/directs/clickOutside.direct'
+import { debounce, throttle } from '@/utils/adLoadsh'
+import { getVideoScreenshot } from '@/utils/media'
+import { useEventListener } from '@/utils/vant/useEventListener'
+import * as Type from './type'
 
 export * from './type'
 
@@ -372,8 +372,8 @@ export default defineComponent({
       default: ''
     }
   },
-  emits: ['changeQuality', 'ended', 'error', 'next'],
-  setup(props, ctx) {
+  emits: ['changeQuality', 'ended', 'error', 'next', 'fullscreen'],
+  setup(props, { emit }) {
     const awVideoMsgComp = ref<InstanceType<typeof AwVideoMsg>>()
     const awVideoProgressComp = ref<AwVideoProgressComp>()
     const videoInstance = ref<VideoInstance>()
@@ -432,7 +432,7 @@ export default defineComponent({
     //     const changeQuality = (value: Type.Quality['value']) => {
     //       currentQuality.value = value
     //       qualitySelectVisible.value = false
-    //       ctx.emit('changeQuality', value)
+    //       emit('changeQuality', value)
     //     }
 
     //     return {
@@ -490,6 +490,7 @@ export default defineComponent({
     /** 网页全屏切换 */
     const webFullScreenCutover = () => {
       player.webFullScreen = !player.webFullScreen
+      emit('fullscreen', player.webFullScreen)
       setTimeout(() => {
         awVideoProgressComp.value?.initStyle()
       }, 1000)
@@ -587,7 +588,7 @@ export default defineComponent({
           content: '本集已播放完成~',
           duration: 5000
         })
-        ctx.emit('ended')
+        emit('ended')
       },
       /** 播放 监听 */
       play() {
@@ -601,7 +602,7 @@ export default defineComponent({
       error(e: Error) {
         console.error(e)
         player.status = Type.PlayerStatus.Failed
-        ctx.emit('error')
+        emit('error')
         notify({
           content: '视频加载错误，emmm~',
           duration: 5000
