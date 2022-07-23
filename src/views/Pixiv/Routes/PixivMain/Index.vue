@@ -7,11 +7,11 @@
       <div class="pixiv-main__content" :style="contentStyle">
         <div class="painter">
           <div class="painter-avatar">
-            <img :src="detail.orgurl" alt="" />
+            <img :src="pixivImgMain.author.avatar" alt="" />
           </div>
           <div class="painter-info">
             <p>
-              <b>{{ detail.title }}</b>
+              <b>{{ pixivImgMain.author.name }}</b>
               <a> · {{ $moment(detail.date).fromNow() }}</a>
             </p>
             <ul>
@@ -23,9 +23,13 @@
         <div class="plate">
           <img
             ref="plateImgEl"
-            :src="detail.orgurl"
-            alt=""
+            :src="pixivImgMainList.first"
             @load="onPlateImgLoad"
+          />
+          <BaseImg
+            v-for="(src, index) in pixivImgMainList.others"
+            :key="index"
+            :src="src"
           />
           <ul>
             <li v-for="(item, index) in detail.tags.split(',')" :key="index">
@@ -54,6 +58,7 @@
 </template>
 
 <script lang="ts">
+import { getComicImgMain } from '@/api'
 import { PixivMainParams } from '@/hooks/router'
 import { jsonParse } from 'adicw-utils'
 import {
@@ -67,6 +72,8 @@ import {
   unref
 } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
+import * as Api from '@apis/index'
+import LazySrc from '@/directs/lazySrc.direct'
 
 function animateModule() {
   const $route = useRoute()
@@ -183,6 +190,9 @@ function animateModule() {
 
 export default defineComponent({
   name: 'PixivMain',
+  directives: {
+    LazySrc
+  },
   props: {
     id: {
       type: [Number, String],
@@ -193,23 +203,63 @@ export default defineComponent({
       default: true
     }
   },
-  setup() {
+  setup(props) {
     const $route = useRoute()
     const $router = useRouter()
+
+    const pixivImgMain: Api.GetComicImgMain & {
+      pending: boolean
+    } = reactive({
+      pending: true,
+      orgImgs: [],
+      author: {
+        name: '',
+        id: '',
+        avatar: ''
+      }
+    })
+
+    const pixivImgMainList = computed(() => {
+      const list = [...pixivImgMain.orgImgs]
+      return {
+        first: list.shift(),
+        others: list
+      }
+    })
+
     const detail = computed<PixivMainParams['detail'] | null>(() =>
       jsonParse($route.params.detail as string, null)
     )
+
+    const fetchpixivImgMain = async () => {
+      if (props.id === -1) return
+      const data = await getComicImgMain(props.id)
+      if (!data) return
+      pixivImgMain.orgImgs = data.orgImgs
+      pixivImgMain.author.name = data.author.name
+      pixivImgMain.author.id = data.author.id
+      pixivImgMain.author.avatar = data.author.avatar
+      pixivImgMain.pending = false
+    }
 
     onActivated(() => {
       if (!detail.value) {
         $router.replace({
           name: 'Pixiv'
         })
+      } else {
+        fetchpixivImgMain()
       }
+    })
+    onDeactivated(() => {
+      pixivImgMain.orgImgs.splice(0)
+      pixivImgMain.pending = true
     })
 
     return {
       detail,
+      pixivImgMain,
+      pixivImgMainList,
       ...animateModule()
     }
   }
@@ -225,7 +275,7 @@ export default defineComponent({
   background: rgba(0, 0, 0, 0.4);
   z-index: 444;
   border-top-left-radius: var(--df-radius);
-  overflow-y: auto;
+  overflow-y: scroll;
   &__close {
     position: fixed;
     top: 80px;
@@ -309,10 +359,11 @@ export default defineComponent({
       padding-bottom: 16px;
       box-sizing: border-box;
       box-shadow: 0 0 2px var(--font-unactive-color);
+      border-top-left-radius: var(--df-radius);
+      border-top-right-radius: var(--df-radius);
       img {
+        display: block;
         width: 100%;
-        border-top-left-radius: var(--df-radius);
-        border-top-right-radius: var(--df-radius);
       }
       ul {
         display: flex;
