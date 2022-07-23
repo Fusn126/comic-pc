@@ -19,7 +19,7 @@ export async function getComicImglist({
   limit?: number
   /** 偏移数量 */
   offset?: number
-  sort?: 'hot' | 'new'
+  sort?: ApiReturns.VilipixSearchSort
   type?: number
 }): Promise<FnReturns.GetComicImglistReturn> {
   try {

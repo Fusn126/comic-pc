@@ -225,6 +225,8 @@ export interface VilipixSearch {
   }
 }
 
+export type VilipixSearchSort = 'hot' | 'new'
+
 export interface VilipixIllust {
   /** 图片列表 */
   imgs: string[]
