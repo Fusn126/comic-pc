@@ -79,13 +79,13 @@ export function useDeferredRender(maxStep: number) {
  * @param callback
  */
 export function useResizeListener(
-  el: HTMLElement | Ref<HTMLElement | undefined>,
+  el: HTMLElement | Ref<HTMLElement | undefined> | (() => HTMLElement | null),
   callback: () => void
 ) {
   let ob: ResizeObserver | null
 
   const add = () => {
-    const element = unref(el)
+    const element = typeof el === 'function' ? el() : unref(el)
 
     if (element && !ob) {
       ob = new ResizeObserver(callback)
@@ -94,7 +94,7 @@ export function useResizeListener(
   }
 
   const remove = () => {
-    const element = unref(el)
+    const element = typeof el === 'function' ? el() : unref(el)
 
     if (element && ob) {
       ob.disconnect()
