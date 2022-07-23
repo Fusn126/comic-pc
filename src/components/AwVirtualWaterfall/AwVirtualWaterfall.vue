@@ -14,8 +14,8 @@
 </template>
 
 <script lang="ts" setup>
+import { useResizeListener } from '@/hooks/utils'
 import { debounce, throttle } from '@/utils/adLoadsh'
-import { useEventListener } from '@/utils/vant/useEventListener'
 import {
   computed,
   CSSProperties,
@@ -57,6 +57,7 @@ const props = withDefaults(
 )
 const selfEl = ref<HTMLElement>()
 
+const isFirstResizeObserverRe = ref(true)
 const reList = reactive({
   isPending: false,
   tpage: 1,
@@ -274,20 +275,33 @@ const repaint = () => {
     }
   })
 }
-
-useEventListener(
-  'resize',
-  debounce(async () => {
-    initRect()
-    repaint()
-  }, 300)
-)
-onMounted(async () => {
+const init = async () => {
   initRect()
   onIsBindChanged(true)
   await loadMoreData()
   addToQueue(requestSize.value)
-})
+}
+
+// useEventListener(
+//   'resize',
+//   debounce(async () => {
+//     initRect()
+//     repaint()
+//   }, 300)
+// )
+useResizeListener(
+  getTarget,
+  debounce(() => {
+    if (isFirstResizeObserverRe.value) {
+      isFirstResizeObserverRe.value = false
+      return
+    }
+    initRect()
+    repaint()
+  }, 300)
+)
+
+onMounted(init)
 
 onUnmounted(() => {
   onIsBindChanged(false)
