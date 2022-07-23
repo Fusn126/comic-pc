@@ -31,7 +31,7 @@ const loaded = ref(false)
   @keyframes identifier {
     from {
       opacity: 0;
-      transform: translateY(50%);
+      transform: translateY(200px);
     }
     to {
       opacity: 1;
