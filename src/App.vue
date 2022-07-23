@@ -13,17 +13,20 @@
     <main class="app-contain__main">
       <AppRouter />
     </main>
+
+    <Live2d ref="live2dComp" @click="live2dAction" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, onMounted, ref } from 'vue'
 import '@/assets/icon/iconfont.css'
 import '@/assets/icon/iconfont.js'
 
 import AppAsideBar from '@/layout/AppAsideBar.vue'
 import AppTabBar from '@/layout/AppTabBar.vue'
 import AppRouter from '@/layout/AppRouter.vue'
+import Live2d from '@/components/Live2d/Live2d.vue'
 
 import { useSystemConfigStore } from './stores/systemConfig.store'
 import { WEB_NAME } from './common/static'
@@ -41,13 +44,34 @@ function asideModule() {
     asideVisible
   }
 }
+function live2dModule() {
+  const live2dComp = ref<InstanceType<typeof Live2d>>()
+  const live2dAction = () => {
+    live2dComp.value?.motion('else')
+  }
+  onMounted(() => {
+    live2dComp.value?.initLive2d({
+      model: '/live2dModels/koharu/koharu.model.json',
+      version: 2,
+      size: {
+        width: 210,
+        height: 260
+      }
+    })
+  })
+  return {
+    live2dComp,
+    live2dAction
+  }
+}
 
 export default defineComponent({
   name: 'Comic',
   components: {
     AppAsideBar,
     AppRouter,
-    AppTabBar
+    AppTabBar,
+    Live2d
   },
   setup() {
     const systemConfigStore = useSystemConfigStore()
@@ -55,7 +79,8 @@ export default defineComponent({
     return {
       WEB_NAME,
       ...asideModule(),
-      ...provideModule()
+      ...provideModule(),
+      ...live2dModule()
     }
   }
 })
