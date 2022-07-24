@@ -34,6 +34,7 @@
           :request-size="state.requestSize"
           :requset="fetchPixiv"
           :gap="26"
+          @onNoMoreResult="onNoMoreResult"
         >
           <template #item="{ item }">
             <PixivContentItem
@@ -125,6 +126,12 @@ const imgPreview = (e: Event, item: ComicSearchItem) => {
       path: item.preurl,
       radius: getComputedStyle(el).borderRadius
     }
+  })
+}
+const onNoMoreResult = () => {
+  ElMessage({
+    message: '木有更多了~',
+    type: 'info'
   })
 }
 

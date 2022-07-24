@@ -27,6 +27,9 @@ import {
 } from 'vue'
 import * as Type from './type'
 
+const emit = defineEmits<{
+  (e: 'onNoMoreResult'): void
+}>()
 const props = withDefaults(
   defineProps<{
     /** 滚动节点 */
@@ -75,16 +78,7 @@ const columns = reactive({
       height: 0
     })),
   /** 已用源数据长度，和queue的所有list长度相加一样 */
-  usedDataLen: 0,
-  get heights() {
-    return columns.queue.map((item) => item.height)
-  },
-  get maxHeight() {
-    return Math.max(...this.heights)
-  },
-  get minHeight() {
-    return Math.min(...this.heights)
-  }
+  usedDataLen: 0
 })
 /** 实际滚动容器信息 */
 const scroll = reactive({
@@ -98,6 +92,31 @@ const scroll = reactive({
   }
 })
 
+/**
+ * 队列极限高度集合
+ */
+const columnsExtremeHeight = computed(() => {
+  let min = Infinity,
+    max = -Infinity,
+    minIndex = 0,
+    maxIndex = 0
+  columns.queue.forEach(({ height }, index) => {
+    if (height >= max) {
+      max = height
+      maxIndex = index
+    }
+    if (height < min) {
+      min = height
+      minIndex = index
+    }
+  })
+  return {
+    min,
+    max,
+    minIndex,
+    maxIndex
+  }
+})
 /** 子项高宽集 */
 const awItem = computed(() =>
   reList.data.reduce((totol, item) => {
@@ -132,7 +151,7 @@ const renderedData = computed(() =>
 )
 const contentStyle = computed<CSSProperties>(() => {
   return {
-    height: `${columns.maxHeight}px`
+    height: `${columnsExtremeHeight.value.max}px`
   }
 })
 
@@ -141,7 +160,10 @@ const { onIsBindChanged, getTarget } = (() => {
     let { scrollTop, clientHeight } = e.target as HTMLElement
     scrollTop -= scroll.offsetTop
     scroll.start = scrollTop
-    if (clientHeight + scrollTop + props.offsetY > columns.minHeight) {
+    if (
+      clientHeight + scrollTop + props.offsetY >
+      columnsExtremeHeight.value.min
+    ) {
       if (!hasMoreData.value) {
         // console.log('request')
         await loadMoreData()
@@ -181,8 +203,12 @@ const loadMoreData = async () => {
   if (reList.isPending) return
   reList.isPending = true
   const { list, total } = await props.requset(reList.tpage, requestSize.value)
-  if (list.length === 0 || list.length < requestSize.value) {
+  const hasResult = list.length !== 0
+  if (!hasResult || list.length < requestSize.value) {
     reList.hasMore = false
+  }
+  if (!hasResult) {
+    emit('onNoMoreResult')
     return
   }
   reList.tpage++
@@ -249,10 +275,10 @@ const addToQueue = (size = 1) => {
     if (!hasMoreData.value) {
       break
     }
-    const minHeiQueueIndex = columns.queue.findIndex(
-      (item) => item.height === columns.minHeight
+    pushToQueue(
+      columnsExtremeHeight.value.minIndex,
+      reList.data[columns.usedDataLen]
     )
-    pushToQueue(minHeiQueueIndex, reList.data[columns.usedDataLen])
   }
 }
 /** 重绘 */
