@@ -4,10 +4,13 @@ import path from 'path'
 import viteCompression from 'vite-plugin-compression'
 import ElementPlus from 'unplugin-element-plus/vite'
 
+import OptimizationPersist from 'vite-plugin-optimize-persist'
+import PkgConfig from 'vite-plugin-package-config'
+
 export default defineConfig({
   plugins: [
     vue(),
-    ElementPlus(),
+    PkgConfig(),
     // 代码压缩
     viteCompression({
       verbose: true,
@@ -15,7 +18,9 @@ export default defineConfig({
       threshold: 10240,
       algorithm: 'gzip',
       ext: '.gz'
-    })
+    }),
+    OptimizationPersist(),
+    ElementPlus()
   ],
   resolve: {
     // 路径别名配置
