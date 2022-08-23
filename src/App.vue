@@ -13,21 +13,14 @@
     <main class="app-contain__main">
       <AppRouter />
     </main>
-
-    <Live2d
-      ref="live2dComp"
-      v-model:visible="koharu.visible"
-      @click="live2dAction"
-    />
   </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import '@/assets/icon/iconfont.css'
 import '@/assets/icon/iconfont.js'
-import { defineComponent, onMounted, ref } from 'vue'
+import { ref } from 'vue'
 
-import Live2d from '@/components/Live2d/Live2d.vue'
 import AppAsideBar from '@/layout/AppAsideBar.vue'
 import AppRouter from '@/layout/AppRouter.vue'
 import AppTabBar from '@/layout/AppTabBar.vue'
@@ -35,63 +28,13 @@ import AppTabBar from '@/layout/AppTabBar.vue'
 import { WEB_NAME } from './common/static'
 import { useIsDev } from './hooks/utils'
 import { useSystemConfigStore } from './stores/systemConfig.store'
-import { useKoharu } from '@/stores/koharu.store'
 
-function provideModule() {
-  const { isDev } = useIsDev()
-  return {
-    isDev
-  }
-}
-function asideModule() {
-  const asideVisible = ref(true)
-  return {
-    asideVisible
-  }
-}
-function live2dModule() {
-  const live2dComp = ref<InstanceType<typeof Live2d>>()
-  const koharu = useKoharu()
+const systemConfigStore = useSystemConfigStore()
+systemConfigStore.init()
 
-  const live2dAction = () => {
-    live2dComp.value?.motion('else')
-  }
-  onMounted(() => {
-    live2dComp.value?.initLive2d({
-      model: '/live2dModels/koharu/koharu.model.json',
-      version: 2,
-      size: {
-        width: 210,
-        height: 260
-      }
-    })
-  })
-  return {
-    live2dComp,
-    live2dAction,
-    koharu
-  }
-}
+const { isDev } = useIsDev()
 
-export default defineComponent({
-  name: 'Comic',
-  components: {
-    AppAsideBar,
-    AppRouter,
-    AppTabBar,
-    Live2d
-  },
-  setup() {
-    const systemConfigStore = useSystemConfigStore()
-    systemConfigStore.init()
-    return {
-      WEB_NAME,
-      ...asideModule(),
-      ...provideModule(),
-      ...live2dModule()
-    }
-  }
-})
+const asideVisible = ref(true)
 </script>
 
 <style lang="less">
